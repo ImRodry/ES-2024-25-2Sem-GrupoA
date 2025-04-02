@@ -20,7 +20,8 @@
 	},
 	"homepage": "https://github.com/ImRodry/ES-2024-25-2Sem-GrupoA#readme",
 	"dependencies": {
-		"csv-parse": "^5.6.0"
+		"csv-parse": "^5.6.0",
+		"graphology": "^0.26.0"
 	},
 	"devDependencies": {
 		"@types/node": "^22.13.14"
