@@ -1,7 +1,6 @@
 import { before, test } from "node:test"
 import { notStrictEqual, strictEqual } from "node:assert"
-import { importCSV, validateProperty } from "./importer"
-import { Property } from "./importer"
+import { importCSV, validateProperty, type Property } from "../src/importer"
 
 let props: Property[]
 
