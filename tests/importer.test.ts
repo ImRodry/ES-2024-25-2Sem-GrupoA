@@ -1,6 +1,6 @@
 import { before, test } from "node:test"
 import { notStrictEqual, strictEqual } from "node:assert"
-import { importCSV, validateProperty, type Property } from "../src/importer"
+import { importCSV, parseProperty, type Property } from "../src/importer"
 
 let props: Property[]
 
@@ -22,7 +22,7 @@ test("Validates correct entry", () => {
 		Ilha: "Ilha",
 	}
 
-	const result = validateProperty(valid)
+	const result = parseProperty(valid)
 	notStrictEqual(result, null)
 })
 
@@ -40,7 +40,7 @@ test("Detect invalid strings", () => {
 		Ilha: "",
 	}
 
-	const result = validateProperty(invalid)
+	const result = parseProperty(invalid)
 	strictEqual(result, null)
 })
 
@@ -58,6 +58,6 @@ test("Detect invalid numbers", () => {
 		Ilha: "z",
 	}
 
-	const result = validateProperty(invalid)
+	const result = parseProperty(invalid)
 	strictEqual(result, null)
 })

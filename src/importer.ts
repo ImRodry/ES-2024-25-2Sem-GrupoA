@@ -1,82 +1,70 @@
 import { readFileSync } from "node:fs"
 import { parse } from "csv-parse/sync"
 
-export interface Property {
-    OBJECTID: number
-    PAR_ID: number
-    PAR_NUM: number
-    Shape_Length: number
-    Shape_Area: number
-    geometry: string
-    OWNER: number
-    Freguesia: string
-    Municipio: string
-    Ilha: string
+export function parseProperty(data: any): Property | null {
+	const parsed = {
+		objectid: Number(data.objectid),
+		parId: Number(data.parId),
+		parNum: Number(String(data.parNum).replace(",", ".")),
+		shapeLength: Number(data.shapeLength),
+		shapeArea: Number(data.shapeArea),
+		geometry: data.geometry.match(/\d+\.\d+ \d+\.\d+/g).map((coord: string) => coord.split(" ").map(Number)),
+		owner: Number(data.owner),
+		freguesia: data.freguesia,
+		municipio: data.municipio,
+		ilha: data.ilha,
+	}
+
+	//Testa os valores numericos das propriedades
+	const numeros = [parsed.objectid, parsed.parId, parsed.parNum, parsed.shapeLength, parsed.shapeArea, parsed.owner]
+
+	const anyInvalidNums = numeros.filter(n => isNaN(n))
+	if (anyInvalidNums.length) {
+		console.log("Invalid data (numbers): ", anyInvalidNums)
+		return null
+	}
+
+	//Teste se as strings n sao vazias
+	const strings = [parsed.geometry, parsed.freguesia, parsed.municipio, parsed.ilha],
+		anyInvalidStrings = strings.filter(s => !s || s.length === 0)
+
+	if (anyInvalidStrings.length) {
+		console.log("Invalid data (string): ", anyInvalidStrings)
+		return null
+	}
+
+	return parsed
 }
-
-export function validateProperty(data: any): Property | null {
-    const parsed = {
-        OBJECTID: Number(data.OBJECTID),
-        PAR_ID: Number(data.PAR_ID),
-        PAR_NUM: Number(String(data.PAR_NUM).replace(",", ".")),
-        Shape_Length: Number(data.Shape_Length),
-        Shape_Area: Number(data.Shape_Area),
-        geometry: data.geometry,
-        OWNER: Number(data.OWNER),
-        Freguesia: data.Freguesia,
-        Municipio: data.Municipio,
-        Ilha: data.Ilha
-    }
-
-    //Testa os valores numericos das propriedades
-    const numeros = [ 
-        parsed.OBJECTID,
-        parsed.PAR_ID,
-        parsed.PAR_NUM,
-        parsed.Shape_Length,
-        parsed.Shape_Area,
-        parsed.OWNER
-    ]
-
-    const anyInvalid = numeros.some(n => isNaN(n))
-    if (anyInvalid) {
-        console.log("Invalid data (numbers):")
-        return null
-    }
-
-    //Teste se as strings n sao vazias
-    const strings = [
-        parsed.geometry,
-        parsed.Freguesia,
-        parsed.Municipio,
-        parsed.Ilha
-      ]
-    
-      if (strings.some(s => !s || s.length === 0)) {
-        console.log("Invalid data (string):")
-        return null
-      }
-
-    return parsed
-}
-
 
 export function importCSV(path: string): Property[] {
-    const content = readFileSync(path, "utf-8")
-    const register = parse(content, {
-        columns: true,
-        skip_empty_lines: true,
-        delimiter: ";"
-    })
+	const content = readFileSync(path, "utf-8")
+	const register = parse(content, {
+		columns: line =>
+			line.map((col: string) => col.toLowerCase().replace(/_(.)/g, (_, letter) => letter.toUpperCase())),
+		skip_empty_lines: true,
+		delimiter: ";",
+	})
 
-    const property: Property[] = []
+	const property: Property[] = []
 
-    for (const reg of register) {
-        const prop = validateProperty(reg)
-        //console.log(prop?.PAR_NUM)
-        if (prop) property.push(prop)
-    }
+	for (const reg of register) {
+		const prop = parseProperty(reg)
+		//console.log(prop?.PAR_NUM)
+		if (prop) property.push(prop)
+	}
 
-    return property
+	return property
 }
 
+export interface Property {
+	objectid: number
+	parId: number
+	parNum: number
+	shapeLength: number
+	shapeArea: number
+	geometry: [number, number][]
+	owner: number
+	freguesia: string
+	municipio: string
+	ilha: string
+}
