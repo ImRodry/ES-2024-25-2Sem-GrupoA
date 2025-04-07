@@ -1,22 +1,27 @@
-import { importCSV } from "./importer"
-import { addProperty, addAdjacency, printGraph } from "./graph"
+import { importCSV, Property } from "./importer"
+import { buildPropertyGraph, buildOwnerGraph } from "./graph"
 
-// Importar propriedades do CSV
-const properties = importCSV("data/Madeira-Moodle-1.1.csv")
+const CSV_PATH = "data/Madeira-Moodle-1.1.csv" //Path para o CSV
 
-console.log("Total number of properties:", properties.length)
+try {
+	const allProperties: Property[] = importCSV(CSV_PATH)
+	console.log(`Total de propriedades importadas: ${allProperties.length}`)
 
-// Adicionar propriedades ao grafo
-properties.forEach(property => {
-    addProperty(property)
-})
+	// Subconjunto para testes
+	const properties = allProperties.slice(0, 100)
+	console.log(`A construir grafos com ${properties.length} propriedades...`)
 
-// Adicionar algumas relações de adjacência para testar
-if (properties.length > 1) {
-    for (let i = 0; i < properties.length - 1; i++) {
-        addAdjacency(properties[i].PAR_ID, properties[i + 1].PAR_ID)
-    }
+	const propertyGraph = buildPropertyGraph(properties)
+	console.log("Grafo de propriedades (por objectId):")
+	for (const [node, neighbours] of propertyGraph.entries()) {
+		console.log(`${node} -> ${[...neighbours].join(", ")}`)
+	}
+
+	const ownerGraph = buildOwnerGraph(properties)
+	console.log("\nGrafo de proprietários (por owner):")
+	for (const [node, neighbours] of ownerGraph.entries()) {
+		console.log(`${node} -> ${[...neighbours].join(", ")}`)
+	}
+} catch (error) {
+	console.error("Erro ao processar o CSV:", error)
 }
-
-// Imprimir o grafo para verificação
-printGraph()
