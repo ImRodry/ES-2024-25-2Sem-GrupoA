@@ -52,7 +52,7 @@ export function parseProperty(data: RawProperty): Property | null {
 		return null
 	}
 
-	if (parsed.geometry.length === 0 || parsed.geometry.some(c => c.length !== 2)) {
+	if (parsed.geometry.length === 0 || parsed.geometry.some(c => c.length !== 2 || c.some(isNaN))) {
 		console.log("Invalid data (geometry): ", parsed.geometry)
 		return null
 	}
@@ -73,6 +73,8 @@ export interface Property {
 	ilha: string
 }
 
+// Cria um tipo com as mesmas propriedades que Property, mas com os valores como string
+// e objectid com casing diferente
 export type RawProperty = {
 	[K in keyof Omit<Property, "objectId">]: string
 } & { objectid: string }
