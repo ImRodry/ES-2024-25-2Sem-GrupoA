@@ -20,7 +20,7 @@ export function parseProperty(data: RawProperty): Property | null {
 		shapeArea: Number(data.shapeArea),
 		geometry:
 			data.geometry
-				.match(/\d+\.\d+ \d+\.\d+/g)
+				.match(/(?<=, |\()\d+\.\d+ \d+\.\d+(?=,|\))/g)
 				?.map((coord: string) => coord.split(" ").map(Number) as [number, number]) ?? [],
 		owner: Number(data.owner),
 		freguesia: data.freguesia,
@@ -39,7 +39,7 @@ export function parseProperty(data: RawProperty): Property | null {
 	}
 
 	// Testa se as strings não sao vazias
-	const anyInvalidStrings = Object.entries(parsed).filter(([, s]) => typeof s === "string" && s.length === 0)
+	const anyInvalidStrings = Object.entries(parsed).filter(([, s]) => typeof s === "string" && !s.trim())
 	if (anyInvalidStrings.length) {
 		console.log("Invalid data (string): ", anyInvalidStrings)
 		return null
