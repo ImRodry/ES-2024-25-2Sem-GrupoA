@@ -8,13 +8,7 @@ export function parseCSV(csvString: string): RawProperty[] {
 		delimiter: ";",
 	})
 
-	const properties: Property[] = []
-	for (const rawProp of parsed) {
-		const prop = parseProperty(rawProp)
-		if (prop) properties.push(prop)
-	}
-
-	return properties
+	return parsed
 }
 
 export function parseProperty(data: RawProperty): Property | null {
