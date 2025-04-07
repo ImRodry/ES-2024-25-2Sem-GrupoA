@@ -1,8 +1,7 @@
-import { readFileSync } from "node:fs"
 import { parse } from "csv-parse/sync"
 
-export function importCSV(path: string): Property[] {
-	const parsed: RawProperty[] = parse(readFileSync(path, "utf-8"), {
+export function parseCSV(csvString: string): RawProperty[] {
+	const parsed: RawProperty[] = parse(csvString, {
 		columns: line =>
 			line.map((col: string) => col.toLowerCase().replace(/_(.)/g, (_, letter) => letter.toUpperCase())),
 		skip_empty_lines: true,

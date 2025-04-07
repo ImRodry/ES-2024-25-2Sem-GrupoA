@@ -1,6 +1,7 @@
-import { importCSV } from "./importer"
+import { readFileSync } from "node:fs"
+import { parseCSV, parseProperty, Property } from "./importer"
 
-const properties = importCSV("data/Madeira-Moodle-1.1.csv")
+const rawProps = parseCSV(readFileSync("data/Madeira-Moodle-1.1.csv", "utf-8"))
 
 console.log("Total number os properties: ")
-console.log(properties.length)
+console.log(rawProps.length)
