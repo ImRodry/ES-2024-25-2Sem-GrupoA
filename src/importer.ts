@@ -10,8 +10,8 @@ export function importCSV(path: string): Property[] {
 	})
 
 	const properties: Property[] = []
-	for (const line of parsed) {
-		const prop = parseProperty(line)
+	for (const rawProp of parsed) {
+		const prop = parseProperty(rawProp)
 		if (prop) properties.push(prop)
 	}
 
