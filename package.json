@@ -2,7 +2,7 @@
 	"name": "es-2024-25-2sem-grupo-a",
 	"version": "1.0.0",
 	"description": "",
-	"main": "dist/index.js",
+	"main": "dist/src/index.js",
 	"scripts": {
 		"postinstall": "tsc",
 		"test": "node --test ./dist/tests/**/*.test.js"

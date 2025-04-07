@@ -1,24 +1,6 @@
-import { readFileSync } from "node:fs"
+import { importCSV } from "./importer"
 
-const file = readFileSync("data/Madeira-Moodle-1.1.csv", "utf-8")
+const properties = importCSV("data/Madeira-Moodle-1.1.csv")
 
-console.log(file.split("\n").length)
-
-const obj = {
-	abc: 5,
-	foo: () => {
-		console.log("foo")
-	},
-}
-obj.foo()
-obj.abc = 1
-
-interface Data {
-	objectId: Map<string, number>
-	par_id?: number
-	par_num: number
-	shape_length: number
-	ola: {
-		adeus: string
-	}
-}
+console.log("Total number os properties: ")
+console.log(properties.length)
