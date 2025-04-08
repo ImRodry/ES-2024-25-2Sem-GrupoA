@@ -1,4 +1,5 @@
-import { polygon, booleanIntersects, booleanTouches } from "@turf/turf"
+import booleanIntersects from "@turf/boolean-intersects"
+import { polygon } from "@turf/helpers"
 import { Property } from "./importer"
 
 type NodeID = number
