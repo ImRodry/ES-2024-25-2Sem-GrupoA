@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { parseCSV, parseProperty, Property } from "./importer"
-import { buildPropertyGraph, buildOwnerGraph } from "./graph"
+import { buildGraph } from "./graph"
 
 try {
 	const rawProps = parseCSV(readFileSync("data/Madeira-Moodle-1.1.csv", "utf-8"))
@@ -17,13 +17,13 @@ try {
 	const slicedProperties = properties.slice(0, 100)
 	console.log(`A construir grafos com ${slicedProperties.length} propriedades...`)
 
-	const propertyGraph = buildPropertyGraph(slicedProperties)
+	const propertyGraph = buildGraph(slicedProperties, "objectId")
 	console.log("Grafo de propriedades (por objectId):")
 	for (const [node, neighbours] of propertyGraph.entries()) {
 		console.log(`${node} -> ${[...neighbours].join(", ")}`)
 	}
 
-	const ownerGraph = buildOwnerGraph(slicedProperties)
+	const ownerGraph = buildGraph(slicedProperties, "owner")
 	console.log("\nGrafo de proprietários (por owner):")
 	for (const [node, neighbours] of ownerGraph.entries()) {
 		console.log(`${node} -> ${[...neighbours].join(", ")}`)
