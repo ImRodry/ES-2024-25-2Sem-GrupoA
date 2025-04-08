@@ -1,21 +1,14 @@
-import { readFileSync } from "node:fs"
 import { parse } from "csv-parse/sync"
 
-export function importCSV(path: string): Property[] {
-	const parsed: RawProperty[] = parse(readFileSync(path, "utf-8"), {
+export function parseCSV(csvString: string): RawProperty[] {
+	const parsed: RawProperty[] = parse(csvString, {
 		columns: line =>
 			line.map((col: string) => col.toLowerCase().replace(/_(.)/g, (_, letter) => letter.toUpperCase())),
 		skip_empty_lines: true,
 		delimiter: ";",
 	})
 
-	const properties: Property[] = []
-	for (const rawProp of parsed) {
-		const prop = parseProperty(rawProp)
-		if (prop) properties.push(prop)
-	}
-
-	return properties
+	return parsed
 }
 
 export function parseProperty(data: RawProperty): Property | null {
@@ -27,7 +20,7 @@ export function parseProperty(data: RawProperty): Property | null {
 		shapeArea: Number(data.shapeArea),
 		geometry:
 			data.geometry
-				.match(/\d+\.\d+ \d+\.\d+/g)
+				.match(/(?<=, |\()\d+\.\d+ \d+\.\d+(?=,|\))/g)
 				?.map((coord: string) => coord.split(" ").map(Number) as [number, number]) ?? [],
 		owner: Number(data.owner),
 		freguesia: data.freguesia,
@@ -46,7 +39,7 @@ export function parseProperty(data: RawProperty): Property | null {
 	}
 
 	// Testa se as strings não sao vazias
-	const anyInvalidStrings = Object.entries(parsed).filter(([, s]) => typeof s === "string" && s.length === 0)
+	const anyInvalidStrings = Object.entries(parsed).filter(([, s]) => typeof s === "string" && !s.trim())
 	if (anyInvalidStrings.length) {
 		console.log("Invalid data (string): ", anyInvalidStrings)
 		return null
