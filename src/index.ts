@@ -11,23 +11,19 @@ try {
 		if (prop) properties.push(prop)
 	}
 
-	console.log(`Total de propriedades importadas: ${properties.length}`)
-
-	// Subconjunto para testes
-	const slicedProperties = properties.slice(0, 100)
-	console.log(`A construir grafos com ${slicedProperties.length} propriedades...`)
-
-	const propertyGraph = buildGraph(slicedProperties, "objectId")
+	console.log(`A construir grafos com ${properties.length} propriedades...`)
+	console.time("propriedades")
+	const propertyGraph = buildGraph(properties, "objectId")
+	console.timeEnd("propriedades")
 	console.log("Grafo de propriedades (por objectId):")
-	for (const [node, neighbours] of propertyGraph.entries()) {
-		console.log(`${node} -> ${[...neighbours].join(", ")}`)
-	}
+	for (const [node, neighbours] of propertyGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
 
-	const ownerGraph = buildGraph(slicedProperties, "owner")
-	console.log("\nGrafo de proprietários (por owner):")
-	for (const [node, neighbours] of ownerGraph.entries()) {
-		console.log(`${node} -> ${[...neighbours].join(", ")}`)
-	}
+	console.time("owners")
+	const ownerGraph = buildGraph(properties, "owner")
+	console.timeEnd("owners")
+
+	console.log("Grafo de proprietários (por owner):")
+	for (const [node, neighbours] of ownerGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }
