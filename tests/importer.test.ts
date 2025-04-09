@@ -1,6 +1,6 @@
 import * as assert from "node:assert"
-import { test } from "node:test"
-import { parseCSV, parseProperty, Property, RawProperty } from "../src/importer"
+import { suite, test } from "node:test"
+import { parseCSV, parseProperty, type Property, type RawProperty } from "../src/importer"
 
 const sampleCSV = `
 OBJECTID;PAR_ID;PAR_NUM;Shape_Length;Shape_Area;geometry;OWNER;Freguesia;Municipio;Ilha
@@ -59,47 +59,49 @@ OBJECTID;PAR_ID;PAR_NUM;Shape_Length;Shape_Area;geometry;OWNER;Freguesia;Municip
 		},
 	]
 
-test("parseCSV correctly parses a CSV string into RawProperty objects", () => {
-	const parsedRawProperties = parseCSV(sampleCSV)
-	assert.deepStrictEqual(parsedRawProperties, expectedRawProperties)
-	assert.strictEqual(parsedRawProperties.length, expectedRawProperties.length)
-})
+suite("parseCSV and parseProperty tests", () => {
+	test("parseCSV correctly parses a CSV string into RawProperty objects", () => {
+		const parsedRawProperties = parseCSV(sampleCSV)
+		assert.deepStrictEqual(parsedRawProperties, expectedRawProperties)
+		assert.strictEqual(parsedRawProperties.length, expectedRawProperties.length)
+	})
 
-test("parseProperty correctly parses a valid RawProperty into a Property object", () => {
-	const parsedProperty = parseProperty(expectedRawProperties[0])
-	assert.deepStrictEqual(parsedProperty, expectedProperties[0])
-})
+	test("parseProperty correctly parses a valid RawProperty into a Property object", () => {
+		const parsedProperty = parseProperty(expectedRawProperties[0])
+		assert.deepStrictEqual(parsedProperty, expectedProperties[0])
+	})
 
-test("parseProperty returns null for invalid numeric data", () => {
-	const parsedProperty = parseProperty(expectedRawProperties[1])
-	assert.strictEqual(parsedProperty, null)
-})
+	test("parseProperty returns null for invalid numeric data", () => {
+		const parsedProperty = parseProperty(expectedRawProperties[1])
+		assert.strictEqual(parsedProperty, null)
+	})
 
-test("parseProperty returns null for NaN value", () => {
-	const invalidGeometryRawProperty: RawProperty = {
-		...expectedRawProperties[0],
-		owner: "NaN",
-	}
-	const parsedProperty = parseProperty(invalidGeometryRawProperty)
-	assert.strictEqual(parsedProperty, null)
-})
+	test("parseProperty returns null for NaN value", () => {
+		const invalidGeometryRawProperty: RawProperty = {
+			...expectedRawProperties[0],
+			owner: "NaN",
+		}
+		const parsedProperty = parseProperty(invalidGeometryRawProperty)
+		assert.strictEqual(parsedProperty, null)
+	})
 
-test("parseProperty returns null for empty string", () => {
-	const invalidGeometryRawProperty: RawProperty = {
-		...expectedRawProperties[0],
-		ilha: " ",
-	}
-	const parsedProperty = parseProperty(invalidGeometryRawProperty)
-	assert.strictEqual(parsedProperty, null)
-})
+	test("parseProperty returns null for empty string", () => {
+		const invalidGeometryRawProperty: RawProperty = {
+			...expectedRawProperties[0],
+			ilha: " ",
+		}
+		const parsedProperty = parseProperty(invalidGeometryRawProperty)
+		assert.strictEqual(parsedProperty, null)
+	})
 
-test("parseProperty returns null for invalid non-empty geometry", () => {
-	const invalidGeometryRawProperty: RawProperty = {
-		...expectedRawProperties[0],
-		geometry:
-			// has 1 point with 4 values
-			"MULTIPOLYGON (((299218.5203999998 3623637.4791 299218.5033999998 3623637.4715)))",
-	}
-	const parsedProperty = parseProperty(invalidGeometryRawProperty)
-	assert.strictEqual(parsedProperty, null)
+	test("parseProperty returns null for invalid non-empty geometry", () => {
+		const invalidGeometryRawProperty: RawProperty = {
+			...expectedRawProperties[0],
+			geometry:
+				// has 1 point with 4 values
+				"MULTIPOLYGON (((299218.5203999998 3623637.4791 299218.5033999998 3623637.4715)))",
+		}
+		const parsedProperty = parseProperty(invalidGeometryRawProperty)
+		assert.strictEqual(parsedProperty, null)
+	})
 })
