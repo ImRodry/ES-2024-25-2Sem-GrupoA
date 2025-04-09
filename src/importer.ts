@@ -42,7 +42,7 @@ export function parseProperty(data: RawProperty): Property | null {
 
 	const anyInvalidNums = entries.filter(([, n]) => typeof n === "number" && isNaN(n))
 	if (anyInvalidNums.length) {
-		console.log(
+		console.error(
 			"Invalid data (numbers): ",
 			anyInvalidNums.map(([key]) => key)
 		)
@@ -51,12 +51,12 @@ export function parseProperty(data: RawProperty): Property | null {
 
 	const anyInvalidStrings = entries.filter(([, s]) => typeof s === "string" && !s.trim())
 	if (anyInvalidStrings.length) {
-		console.log("Invalid data (string): ", anyInvalidStrings)
+		console.error("Invalid data (string): ", anyInvalidStrings)
 		return null
 	}
 
 	if (parsed.geometry.length === 0 || parsed.geometry.some(c => c.length !== 2 || c.some(isNaN))) {
-		console.log("Invalid data (geometry): ", parsed.geometry)
+		console.error("Invalid data (geometry): ", parsed.geometry)
 		return null
 	}
 
