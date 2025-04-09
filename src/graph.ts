@@ -11,8 +11,11 @@ export function toTurfPolygon(geometry: [number, number][]) {
 }
 
 // Função genérica de criação de grafo
-export function buildGraph(properties: Property[], nodeProp: keyof Property) {
-	const graph = new Map()
+export function buildGraph<T extends IndexablePropertyKeys>(
+	properties: Property[],
+	nodeProp: T
+): Map<Property[T], Set<Property[T]>> {
+	const graph = new Map<Property[T], Set<Property[T]>>()
 	const tree = new RBush<RBushType>()
 	const polygons = properties.map(p => toTurfPolygon(p.geometry))
 	const bboxes = polygons.map((p, i) => {
