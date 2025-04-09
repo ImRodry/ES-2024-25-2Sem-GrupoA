@@ -1,7 +1,7 @@
 import * as assert from "node:assert"
-import { test } from "node:test"
+import { suite, test } from "node:test"
 import { buildGraph, toTurfPolygon } from "../src/graph"
-import { Property } from "../src/importer"
+import type { Property } from "../src/importer"
 
 const properties: Property[] = [
 	{
@@ -145,61 +145,63 @@ const properties: Property[] = [
 	},
 ]
 
-test("buildGraph returns an empty graph when properties array is empty", () => {
-	const graph = buildGraph([], "objectId")
-	assert.strictEqual(graph.size, 0)
-})
+suite("Graph Tests", () => {
+	test("buildGraph returns an empty graph when properties array is empty", () => {
+		const graph = buildGraph([], "objectId")
+		assert.strictEqual(graph.size, 0)
+	})
 
-test("buildGraph constructs correct adjacency graph using objectId", () => {
-	const expectedGraphByObjectId = new Map<number, Set<number>>([
-		[8, new Set([15])],
-		[14, new Set()],
-		[15, new Set([8, 16])],
-		[16, new Set([15])],
-	])
-	const graph = buildGraph(properties, "objectId")
-	for (const [key, neighbors] of expectedGraphByObjectId) {
-		assert.ok(graph.has(key), `Missing node for key ${key}`)
-		assert.deepStrictEqual(graph.get(key), neighbors, `Neighbors for key ${key} do not match`)
-	}
-	assert.strictEqual(graph.size, expectedGraphByObjectId.size, `Graph size mismatch`)
-})
+	test("buildGraph constructs correct adjacency graph using objectId", () => {
+		const expectedGraphByObjectId = new Map<number, Set<number>>([
+			[8, new Set([15])],
+			[14, new Set()],
+			[15, new Set([8, 16])],
+			[16, new Set([15])],
+		])
+		const graph = buildGraph(properties, "objectId")
+		for (const [key, neighbors] of expectedGraphByObjectId) {
+			assert.ok(graph.has(key), `Missing node for key ${key}`)
+			assert.deepStrictEqual(graph.get(key), neighbors, `Neighbors for key ${key} do not match`)
+		}
+		assert.strictEqual(graph.size, expectedGraphByObjectId.size, `Graph size mismatch`)
+	})
 
-test("buildGraph constructs correct adjacency graph using owner", () => {
-	const expectedGraphByOwner = new Map<number, Set<number>>([
-		[7, new Set([20])],
-		[20, new Set([7, 31])],
-		[31, new Set([20])],
-		[40, new Set()],
-	])
-	const graph = buildGraph(properties, "owner")
-	for (const [key, neighbors] of expectedGraphByOwner) {
-		assert.ok(graph.has(key), `Missing node for owner ${key}`)
-		assert.deepStrictEqual(graph.get(key), neighbors, `Neighbors for owner ${key} do not match`)
-	}
-	assert.strictEqual(graph.size, expectedGraphByOwner.size, `Graph size mismatch`)
-})
+	test("buildGraph constructs correct adjacency graph using owner", () => {
+		const expectedGraphByOwner = new Map<number, Set<number>>([
+			[7, new Set([20])],
+			[20, new Set([7, 31])],
+			[31, new Set([20])],
+			[40, new Set()],
+		])
+		const graph = buildGraph(properties, "owner")
+		for (const [key, neighbors] of expectedGraphByOwner) {
+			assert.ok(graph.has(key), `Missing node for owner ${key}`)
+			assert.deepStrictEqual(graph.get(key), neighbors, `Neighbors for owner ${key} do not match`)
+		}
+		assert.strictEqual(graph.size, expectedGraphByOwner.size, `Graph size mismatch`)
+	})
 
-test("toTurfPolygon closes a polygon if not already closed", () => {
-	const openGeometry: [number, number][] = [
-		[0, 0],
-		[1, 0],
-		[1, 1],
-		[0, 1],
-	]
-	const polyFeature = toTurfPolygon(openGeometry)
-	const coords = polyFeature.geometry.coordinates[0]
-	assert.deepStrictEqual(coords[0], coords[coords.length - 1])
-})
+	test("toTurfPolygon closes a polygon if not already closed", () => {
+		const openGeometry: [number, number][] = [
+			[0, 0],
+			[1, 0],
+			[1, 1],
+			[0, 1],
+		]
+		const polyFeature = toTurfPolygon(openGeometry)
+		const coords = polyFeature.geometry.coordinates[0]
+		assert.deepStrictEqual(coords[0], coords[coords.length - 1])
+	})
 
-test("toTurfPolygon does not duplicate closing coordinate if already closed", () => {
-	const closedGeometry: [number, number][] = [
-		[0, 0],
-		[1, 0],
-		[1, 1],
-		[0, 1],
-		[0, 0],
-	]
-	const polyFeature = toTurfPolygon(closedGeometry)
-	assert.strictEqual(polyFeature.geometry.coordinates[0].length, closedGeometry.length)
+	test("toTurfPolygon does not duplicate closing coordinate if already closed", () => {
+		const closedGeometry: [number, number][] = [
+			[0, 0],
+			[1, 0],
+			[1, 1],
+			[0, 1],
+			[0, 0],
+		]
+		const polyFeature = toTurfPolygon(closedGeometry)
+		assert.strictEqual(polyFeature.geometry.coordinates[0].length, closedGeometry.length)
+	})
 })
