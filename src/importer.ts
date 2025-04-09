@@ -24,23 +24,23 @@ export function parseCSV(csvString: string): RawProperty[] {
  */
 export function parseProperty(data: RawProperty): Property | null {
 	const parsed: Property = {
-		objectId: Number(data.objectid),
-		parId: Number(data.parId),
-		parNum: Number(String(data.parNum).replace(",", ".")),
-		shapeLength: Number(data.shapeLength),
-		shapeArea: Number(data.shapeArea),
-		geometry:
-			data.geometry
-				.match(/(?<=, |\()\d+\.\d+ \d+\.\d+(?=,|\))/g)
-				?.map((coord: string) => coord.split(" ").map(Number) as [number, number]) ?? [],
-		owner: Number(data.owner),
-		freguesia: data.freguesia,
-		municipio: data.municipio,
-		ilha: data.ilha,
-	}
+			objectId: Number(data.objectid),
+			parId: Number(data.parId),
+			parNum: Number(String(data.parNum).replace(",", ".")),
+			shapeLength: Number(data.shapeLength),
+			shapeArea: Number(data.shapeArea),
+			geometry:
+				data.geometry
+					.match(/(?<=, |\()\d+\.\d+ \d+\.\d+(?=,|\))/g)
+					?.map((coord: string) => coord.split(" ").map(Number) as [number, number]) ?? [],
+			owner: Number(data.owner),
+			freguesia: data.freguesia,
+			municipio: data.municipio,
+			ilha: data.ilha,
+		},
+		entries = Object.entries(parsed)
 
-	// Check if all numeric values are valid
-	const anyInvalidNums = Object.entries(parsed).filter(([, n]) => typeof n === "number" && isNaN(n))
+	const anyInvalidNums = entries.filter(([, n]) => typeof n === "number" && isNaN(n))
 	if (anyInvalidNums.length) {
 		console.log(
 			"Invalid data (numbers): ",
@@ -49,8 +49,7 @@ export function parseProperty(data: RawProperty): Property | null {
 		return null
 	}
 
-	// Testa se as strings não sao vazias
-	const anyInvalidStrings = Object.entries(parsed).filter(([, s]) => typeof s === "string" && !s.trim())
+	const anyInvalidStrings = entries.filter(([, s]) => typeof s === "string" && !s.trim())
 	if (anyInvalidStrings.length) {
 		console.log("Invalid data (string): ", anyInvalidStrings)
 		return null
