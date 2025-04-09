@@ -1,5 +1,5 @@
-import { test } from "node:test"
 import * as assert from "node:assert"
+import { test } from "node:test"
 import { parseCSV, parseProperty, Property, RawProperty } from "../src/importer"
 
 const sampleCSV = `
@@ -67,7 +67,7 @@ test("parseCSV correctly parses a CSV string into RawProperty objects", () => {
 
 test("parseProperty correctly parses a valid RawProperty into a Property object", () => {
 	const parsedProperty = parseProperty(expectedRawProperties[0])
-	assert.deepEqual(parsedProperty, expectedProperties[0])
+	assert.deepStrictEqual(parsedProperty, expectedProperties[0])
 })
 
 test("parseProperty returns null for invalid numeric data", () => {
