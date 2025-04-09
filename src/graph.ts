@@ -2,15 +2,26 @@ import bbox from "@turf/bbox"
 import booleanIntersects from "@turf/boolean-intersects"
 import { polygon } from "@turf/helpers"
 import RBush, { type BBox } from "rbush"
-import { Property } from "./importer"
+import type { Property } from "./importer"
 
-// Converte a geometria para um polígono do Turf (Feature<Polygon>)
+/**
+ * Converts an array of polar coordinates to a Turf.js polygon object, whilst making sure the polygon is closed (first and last coordinates are the same).
+ * @param geometry Array of polar coordinates representing the geometry of a property.
+ * @returns A Turf.js polygon object representing the property geometry.
+ */
 export function toTurfPolygon(geometry: [number, number][]) {
-	if (!geometry[0].every((c, i) => c === geometry.at(-1)![i])) geometry.push(geometry[0]) // fecha o polígono
+	// close the polygon if not already closed
+	if (!geometry[0].every((c, i) => c === geometry.at(-1)![i])) geometry.push(geometry[0])
 	return polygon([geometry])
 }
 
-// Função genérica de criação de grafo
+/**
+ * Builds a graph from an array of properties, checking which properties intersect with each other.
+ * Each property is represented as a node, and edges are created between nodes that intersect.
+ * @param properties Array of properties to add to the graph
+ * @param nodeProp Property key to use as node identifier
+ * @returns A map of nodes and their neighbors
+ */
 export function buildGraph<T extends IndexablePropertyKeys>(
 	properties: Property[],
 	nodeProp: T
@@ -49,4 +60,14 @@ export function buildGraph<T extends IndexablePropertyKeys>(
 	return graph
 }
 
+/**
+ * Type to be inserted into the RBush tree
+ */
 type RBushType = BBox & { index: number }
+
+/**
+ * Names of the properties that can be used as node identifiers in the graph.
+ */
+type IndexablePropertyKeys = {
+	[K in keyof Property]: Property[K] extends keyof any ? K : never
+}[keyof Property]

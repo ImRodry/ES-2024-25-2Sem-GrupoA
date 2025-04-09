@@ -1,5 +1,10 @@
 import { parse } from "csv-parse/sync"
 
+/**
+ * Takes a CSV string and parses it into an array of objects. It also maps the property key to camelCase.
+ * @param csvString CSV string to parse
+ * @returns Array of properties as they were parsed from the CSV without any further processing
+ */
 export function parseCSV(csvString: string): RawProperty[] {
 	const parsed: RawProperty[] = parse(csvString, {
 		columns: line =>
@@ -11,6 +16,12 @@ export function parseCSV(csvString: string): RawProperty[] {
 	return parsed
 }
 
+/**
+ * Converts the object received from the CSV into a Property object, while also checking its integrity.
+ * If any field is malformed, the data is considered invalid and an error message is printed.
+ * @param data RawProperty object to parse as it was received from the CSV
+ * @returns Parsed Property object or null if the data is invalid
+ */
 export function parseProperty(data: RawProperty): Property | null {
 	const parsed: Property = {
 		objectId: Number(data.objectid),
@@ -53,6 +64,9 @@ export function parseProperty(data: RawProperty): Property | null {
 	return parsed
 }
 
+/**
+ * Object representing a property as well as its geometry and relevant data, parsed from the CSV.
+ */
 export interface Property {
 	objectId: number
 	parId: number
@@ -66,8 +80,9 @@ export interface Property {
 	ilha: string
 }
 
-// Cria um tipo com as mesmas propriedades que Property, mas com os valores como string
-// e objectid com casing diferente
+/**
+ * Object parsed from the CSV file, to be converted into a Property object.
+ */
 export type RawProperty = {
 	[K in keyof Omit<Property, "objectId">]: string
 } & { objectid: string }
