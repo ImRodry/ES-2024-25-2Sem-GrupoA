@@ -160,19 +160,9 @@ test("buildGraph constructs correct adjacency graph using objectId", () => {
 	const graph = buildGraph(properties, "objectId")
 	for (const [key, neighbors] of expectedGraphByObjectId) {
 		assert.ok(graph.has(key), `Missing node for key ${key}`)
-		assert.deepStrictEqual(
-			graph.get(key),
-			neighbors,
-			`Neighbors for key ${key} do not match, expected ${[...neighbors].join(", ")}, got ${[
-				...graph.get(key)!,
-			].join(", ")}`
-		)
+		assert.deepStrictEqual(graph.get(key), neighbors, `Neighbors for key ${key} do not match`)
 	}
-	assert.strictEqual(
-		graph.size,
-		expectedGraphByObjectId.size,
-		`Graph size mismatch: expected ${expectedGraphByObjectId.size}, got ${graph.size}`
-	)
+	assert.strictEqual(graph.size, expectedGraphByObjectId.size, `Graph size mismatch`)
 })
 
 test("buildGraph constructs correct adjacency graph using owner", () => {
@@ -185,19 +175,9 @@ test("buildGraph constructs correct adjacency graph using owner", () => {
 	const graph = buildGraph(properties, "owner")
 	for (const [key, neighbors] of expectedGraphByOwner) {
 		assert.ok(graph.has(key), `Missing node for owner ${key}`)
-		assert.deepStrictEqual(
-			graph.get(key),
-			neighbors,
-			`Neighbors for owner ${key} do not match, expected ${[...neighbors].join(", ")}, got ${[
-				...graph.get(key)!,
-			].join(", ")}`
-		)
+		assert.deepStrictEqual(graph.get(key), neighbors, `Neighbors for owner ${key} do not match`)
 	}
-	assert.strictEqual(
-		graph.size,
-		expectedGraphByOwner.size,
-		`Graph size mismatch: expected ${expectedGraphByOwner.size}, got ${graph.size}`
-	)
+	assert.strictEqual(graph.size, expectedGraphByOwner.size, `Graph size mismatch`)
 })
 
 test("toTurfPolygon closes a polygon if not already closed", () => {
