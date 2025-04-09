@@ -5,7 +5,7 @@ import RBush, { type BBox } from "rbush"
 import { Property } from "./importer"
 
 // Converte a geometria para um polígono do Turf (Feature<Polygon>)
-function toTurfPolygon(geometry: [number, number][]) {
+export function toTurfPolygon(geometry: [number, number][]) {
 	if (!geometry[0].every((c, i) => c === geometry.at(-1)![i])) geometry.push(geometry[0]) // fecha o polígono
 	return polygon([geometry])
 }
