@@ -1,7 +1,7 @@
 import * as assert from "node:assert"
 import { suite, test } from "node:test"
-import { buildGraph, toTurfPolygon } from "../src/graph"
-import type { Property } from "../src/importer"
+import { buildGraph, toTurfPolygon } from "../src/graph.ts"
+import type { Property } from "../src/importer.ts"
 
 const properties: Property[] = [
 	{

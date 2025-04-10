@@ -1,6 +1,6 @@
 import * as assert from "node:assert"
 import { suite, test } from "node:test"
-import { parseCSV, parseProperty, type Property, type RawProperty } from "../src/importer"
+import { parseCSV, parseProperty, type Property, type RawProperty } from "../src/importer.ts"
 
 const sampleCSV = `
 OBJECTID;PAR_ID;PAR_NUM;Shape_Length;Shape_Area;geometry;OWNER;Freguesia;Municipio;Ilha

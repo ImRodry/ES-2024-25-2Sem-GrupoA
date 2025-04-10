@@ -1,15 +1,19 @@
 import { readFileSync } from "node:fs"
-import { parseCSV, parseProperty, Property } from "./importer"
-import { buildGraph } from "./graph"
+import { parseCSV, parseProperty, Property } from "./importer.ts"
+import { buildGraph } from "./graph.ts"
 
 try {
+	console.time("parseCSV")
 	const rawProps = parseCSV(readFileSync("data/Madeira-Moodle-1.1.csv", "utf-8"))
+	console.timeEnd("parseCSV")
 
+	console.time("parseProperties")
 	const properties: Property[] = []
 	for (const rawProp of rawProps) {
 		const prop = parseProperty(rawProp)
 		if (prop) properties.push(prop)
 	}
+	console.timeEnd("parseProperties")
 
 	console.log(`A construir grafos com ${properties.length} propriedades...`)
 	console.time("propriedades")
