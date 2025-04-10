@@ -2,7 +2,7 @@ import bbox from "@turf/bbox"
 import booleanIntersects from "@turf/boolean-intersects"
 import { polygon } from "@turf/helpers"
 import RBush, { type BBox } from "rbush"
-import type { Property } from "./importer"
+import type { Property } from "./importer.ts"
 
 /**
  * Converts an array of polar coordinates to a Turf.js polygon object, whilst making sure the polygon is closed (first and last coordinates are the same).

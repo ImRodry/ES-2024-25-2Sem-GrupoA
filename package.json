@@ -14,7 +14,7 @@
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"type": "commonjs",
+	"type": "module",
 	"bugs": {
 		"url": "https://github.com/ImRodry/ES-2024-25-2Sem-GrupoA/issues"
 	},
