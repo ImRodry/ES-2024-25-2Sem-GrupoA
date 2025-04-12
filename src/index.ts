@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { parseCSV, parseProperty, Property } from "./importer.ts"
 import { buildGraph } from "./graph.ts"
+import { averageArea } from "./calculations.ts"
 
 try {
 	console.time("parseCSV")
@@ -28,6 +29,13 @@ try {
 
 	console.log("Grafo de proprietários (por owner):")
 	for (const [node, neighbours] of ownerGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
+
+	console.log("Média de área por freguesia:")
+	console.log(averageArea(properties, "freguesia"))
+	console.log("Média de área por município:")
+	console.log(averageArea(properties, "municipio"))
+	console.log("Média de área por ilha:")
+	console.log(averageArea(properties, "ilha"))
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }

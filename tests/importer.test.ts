@@ -1,4 +1,4 @@
-import * as assert from "node:assert"
+import assert from "node:assert"
 import { suite, test } from "node:test"
 import { parseCSV, parseProperty, type Property, type RawProperty } from "../src/importer.ts"
 
