@@ -1,19 +1,7 @@
-import test, { suite } from "node:test"
+import { test, suite } from "node:test"
 import assert from "node:assert"
 import { averageArea } from "../src/calculations.ts"
-
-interface Property {
-	objectId: number
-	parId: number
-	parNum: number
-	shapeLength: number
-	shapeArea: number
-	geometry: [number, number][]
-	owner: number
-	freguesia: string
-	municipio: string
-	ilha: string
-}
+import type { Property } from "./importer.ts"
 
 const sampleProperties: Property[] = [
 	{
