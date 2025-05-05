@@ -1,9 +1,6 @@
-const fs = require('fs')
-const path = require('path')
-
-window.addEventListener('DOMContentLoaded', () => {
-  const filePath = path.join(__dirname, 'propriedades.json')
-  const propriedades = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+window.addEventListener('DOMContentLoaded', async () => {
+  const propriedades = await fetch("propriedades.json")
+      .then(res => res.json())
 
   const select = document.getElementById('select')
   const canvas = document.getElementById('canvas')
