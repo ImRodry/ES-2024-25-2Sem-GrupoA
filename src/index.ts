@@ -39,12 +39,15 @@ try {
 	console.log(averageArea(properties, "ilha"))
 
 	// Com adjacencias das propriedades do mesmo proprietario
-	console.log("Média de área por freguesia (com adjacências):")
-	console.log(averageAreaWithAdjacency(properties, "freguesia"))
-	console.log("Média de área por município (com adjacências):")
-	console.log(averageAreaWithAdjacency(properties, "municipio"))
-	console.log("Média de área por ilha (com adjacências):")
-	console.log(averageAreaWithAdjacency(properties, "ilha"))
+	console.time("Freguesia")
+	averageAreaWithAdjacency(properties, "freguesia")
+	console.timeEnd("Freguesia")
+	console.time("municipio")
+	averageAreaWithAdjacency(properties, "municipio")
+	console.timeEnd("municipio")
+	console.time("ilha")
+	averageAreaWithAdjacency(properties, "ilha")
+	console.timeEnd("ilha")
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }
