@@ -33,20 +33,20 @@ export function averageAreaWithAdjacency(
             visited.add(currentId);
 
             const currentProp = propertyMap.get(currentId);
-            if (!currentProp) continue;
+                if (currentProp) {
+                merged.shapeArea += currentProp.shapeArea;
+                merged.geometry.push(...currentProp.geometry);
 
-            merged.shapeArea += currentProp.shapeArea;
-            merged.geometry.push(...currentProp.geometry);
-
-            for (const neighborId of adjacencyGraph.get(currentId) || []) {
-                const neighbor = propertyMap.get(neighborId);
-                if (
-                    neighbor &&
-                    neighbor.owner === mergedOwner &&
-                    neighbor[regionType] === mergedRegion &&
-                    !visited.has(neighborId)
-                ) {
-                    stack.push(neighborId);
+                for (const neighborId of adjacencyGraph.get(currentId) || []) {
+                    const neighbor = propertyMap.get(neighborId);
+                    if (
+                        neighbor &&
+                        neighbor.owner === mergedOwner &&
+                        neighbor[regionType] === mergedRegion &&
+                        !visited.has(neighborId)
+                    ) {
+                        stack.push(neighborId);
+                    }
                 }
             }
         }
