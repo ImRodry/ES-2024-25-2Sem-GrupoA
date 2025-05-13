@@ -40,13 +40,13 @@ try {
 
 	// Com adjacencias das propriedades do mesmo proprietario
 	console.time("Freguesia")
-	averageAreaWithAdjacency(properties, "freguesia")
+	console.log(averageAreaWithAdjacency(properties, propertyGraph, "freguesia"))
 	console.timeEnd("Freguesia")
 	console.time("municipio")
-	averageAreaWithAdjacency(properties, "municipio")
+	console.log(averageAreaWithAdjacency(properties, propertyGraph, "municipio"))
 	console.timeEnd("municipio")
 	console.time("ilha")
-	averageAreaWithAdjacency(properties, "ilha")
+	console.log(averageAreaWithAdjacency(properties, propertyGraph, "ilha"))
 	console.timeEnd("ilha")
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
