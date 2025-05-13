@@ -90,4 +90,68 @@ suite("averageAreaWithAdjacency tests", () => {
     const result = averageAreaWithAdjacency([], new Map(), "municipio");
     assert.deepStrictEqual(result, {});
   });
+
+  test("nenhuma propriedade adjacente", () => {
+    const noAdjacencyGraph = new Map<number, Set<number>>([
+      [1, new Set<number>()],
+      [2, new Set<number>()],
+      [3, new Set<number>()],
+    ]);
+    const result = averageAreaWithAdjacency(sampleProperties, noAdjacencyGraph, "freguesia");
+    // sem merge, equivale a averageArea
+    assert.deepStrictEqual(result, {
+      A: (100 + 400) / 2, // 250
+      B: 200,
+    });
+  });
+
+  test("propriedade com múltiplos vizinhos", () => {
+    const multiAdjacencyGraph = new Map<number, Set<number>>([
+      [1, new Set([2, 3])],
+      [2, new Set([1, 3])],
+      [3, new Set([1, 2])],
+    ]);
+    const props = sampleProperties.map(p =>
+      p.objectId === 3 ? { ...p, owner: 1, freguesia: "A" } : p
+    );
+    const result = averageAreaWithAdjacency(props, multiAdjacencyGraph, "freguesia");
+    // 1, 2 e 3 unem-se: área total = 100 + 400 + 200 = 700, count = 1 → média = 700
+    assert.deepStrictEqual(result, {
+      A: 700,
+    });
+  });
+
+  test("propriedades adjacentes com regiões diferentes", () => {
+    const props = sampleProperties.map(p =>
+      p.objectId === 2 ? { ...p, freguesia: "B" } : p
+    );
+    const result = averageAreaWithAdjacency(props, adjacencyGraph, "freguesia");
+    // sem merge em A (apenas 1) → média = 100; em B duas propriedades (400 + 200)/2 = 300
+    assert.deepStrictEqual(result, {
+      A: 100,
+      B: 300,
+    });
+  });
+
+  test("propriedades adjacentes com donos diferentes", () => {
+    const props = sampleProperties.map(p =>
+      p.objectId === 2 ? { ...p, owner: 2 } : p
+    );
+    const result = averageAreaWithAdjacency(props, adjacencyGraph, "freguesia");
+    // sem merge, equivale a averageArea
+    assert.deepStrictEqual(result, {
+      A: (100 + 400) / 2, // 250
+      B: 200,
+    });
+  });
+
+  test("grafo de adjacência vazio", () => {
+    const emptyGraph = new Map<number, Set<number>>();
+    const result = averageAreaWithAdjacency(sampleProperties, emptyGraph, "freguesia");
+    // sem merge, equivale a averageArea
+    assert.deepStrictEqual(result, {
+      A: (100 + 400) / 2, // 250
+      B: 200,
+    });
+  });
 });
