@@ -20,15 +20,15 @@ try {
 	console.time("Grafo de propriedades")
 	const propertyGraph = buildGraph(properties, "objectId")
 	console.timeEnd("Grafo de propriedades")
-	//console.log("Grafo de propriedades (por objectId):")
-	//for (const [node, neighbours] of propertyGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
+	console.log("Grafo de propriedades (por objectId):")
+	for (const [node, neighbours] of propertyGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
 
 	console.time("Grafo de proprietários")
 	const ownerGraph = buildGraph(properties, "owner")
 	console.timeEnd("Grafo de proprietários")
 
-	//console.log("Grafo de proprietários (por owner):")
-	//for (const [node, neighbours] of ownerGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
+	console.log("Grafo de proprietários (por owner):")
+	for (const [node, neighbours] of ownerGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
 
 	//Sem adjacencias das propriedades do mesmo proprietário
 	console.log("Média de área por freguesia:")
@@ -38,8 +38,10 @@ try {
 	console.log("Média de área por ilha:")
 	console.log(averageArea(properties, "ilha"))
 
+	console.time("Tempo com adjacencias (ilha)")
 	const mergedPropertiesbyIlha = mergeAdjacentProperties(properties, propertyGraph, "ilha")
-	console.log(averageArea(mergedPropertiesbyIlha, "ilha"));
+	console.log(averageArea(mergedPropertiesbyIlha, "ilha"))
+	console.timeEnd("Tempo com adjacencias (ilha)")
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }

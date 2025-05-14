@@ -1,4 +1,8 @@
 import { Property } from "./importer.ts"
+import union from "@turf/union"
+import { featureCollection } from "@turf/helpers"
+import { toTurfPolygon } from "./graph.ts"
+import type { Feature, Polygon, MultiPolygon } from "geojson"
 
 export function averageArea(properties: Property[], regionType: "freguesia" | "municipio" | "ilha") {
 	return Object.fromEntries(
@@ -14,44 +18,50 @@ export function mergeAdjacentProperties(
 	adjacencyGraph: Map<number, Set<number>>,
 	regionType: "freguesia" | "municipio" | "ilha"
 ): Property[] {
-	const propertyMap = new Map(properties.map(p => [p.objectId, p]));
-	const visited = new Set<number>();
-	const mergedProperties: Property[] = [];
+	const propertyMap = new Map(properties.map(p => [p.objectId, p]))
+	const visited = new Set<number>()
+	const mergedProperties: Property[] = []
 
 	for (const property of properties) {
-		if (visited.has(property.objectId)) continue;
+		if (visited.has(property.objectId)) continue
 
-		const stack = [property.objectId];
-		const mergedOwner = property.owner;
-		const mergedRegion = property[regionType];
-		const merged: Property = { ...property, shapeArea: 0, geometry: [] as [number, number][] };
+		const stack = [property.objectId]
+		const mergedOwner = property.owner
+		const mergedRegion = property[regionType]
+		let mergedGeometry: Feature<Polygon | MultiPolygon> = toTurfPolygon(property.geometry)
+		let mergedShapeArea = 0
 
 		while (stack.length > 0) {
-			const currentId = stack.pop()!;
-			if (visited.has(currentId)) continue;
-			visited.add(currentId);
+			const currentId = stack.pop()!
+			if (visited.has(currentId)) continue
+			visited.add(currentId)
 
-			const currentProp = propertyMap.get(currentId);
+			const currentProp = propertyMap.get(currentId)
 			if (currentProp) {
-				merged.shapeArea += currentProp.shapeArea;
-				merged.geometry.push(...currentProp.geometry);
+				mergedShapeArea += currentProp.shapeArea
+				const currentPolygon = toTurfPolygon(currentProp.geometry)
+				mergedGeometry = union(featureCollection([mergedGeometry, currentPolygon])) || mergedGeometry
 
 				for (const neighborId of adjacencyGraph.get(currentId) || []) {
-					const neighbor = propertyMap.get(neighborId);
+					const neighbor = propertyMap.get(neighborId)
 					if (
 						neighbor &&
 						neighbor.owner === mergedOwner &&
 						neighbor[regionType] === mergedRegion &&
 						!visited.has(neighborId)
 					) {
-						stack.push(neighborId);
+						stack.push(neighborId)
 					}
 				}
 			}
 		}
 
-		mergedProperties.push(merged);
+		mergedProperties.push({
+			...property,
+			shapeArea: mergedShapeArea,
+			geometry: mergedGeometry.geometry.coordinates[0] as [number, number][],
+		})
 	}
 
-	return mergedProperties;
+	return mergedProperties
 }
