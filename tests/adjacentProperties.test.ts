@@ -1,9 +1,9 @@
 import { test, suite } from "node:test"
 import assert from "node:assert"
-import { mergeAdjacentProperties } from "../src/calculations.ts"
-import type { Property } from "../src/importer.ts"
 import { featureCollection, polygon } from "@turf/helpers"
 import union from "@turf/union"
+import { mergeAdjacentProperties } from "../src/calculations.ts"
+import type { Property } from "../src/importer.ts"
 
 suite("mergeAdjacentProperties tests", () => {
 	const sampleProperties: Property[] = [
