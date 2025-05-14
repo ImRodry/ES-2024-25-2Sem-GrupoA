@@ -119,4 +119,54 @@ suite("mergeAdjacentProperties tests", () => {
 		const result = mergeAdjacentProperties(sampleProperties, new Map(), "freguesia")
 		assert.deepStrictEqual(result, sampleProperties)
 	})
+
+	test("should handle union returning null", () => {
+		const invalidProperties: Property[] = [
+			{
+				objectId: 1,
+				parId: 101,
+				parNum: 1001,
+				shapeLength: 20,
+				shapeArea: 100,
+				geometry: [
+					[0, 0],
+					[1, 0],
+					[1, 1],
+					[0, 1],
+					[0, 0],
+				],
+				owner: 1,
+				freguesia: "A",
+				municipio: "M1",
+				ilha: "I2",
+			},
+			{
+				objectId: 2,
+				parId: 102,
+				parNum: 1002,
+				shapeLength: 25,
+				shapeArea: 400,
+				geometry: [
+					[100, 100], // Geometria distante e não sobreposta
+					[101, 100],
+					[101, 101],
+					[100, 101],
+					[100, 100],
+				],
+				owner: 1,
+				freguesia: "A",
+				municipio: "M1",
+				ilha: "I2",
+			},
+		]
+
+		const adjacencyGraph = new Map<number, Set<number>>([
+			[1, new Set([2])],
+			[2, new Set([1])],
+		])
+
+		const result = mergeAdjacentProperties(invalidProperties, adjacencyGraph, "freguesia")
+		assert.deepStrictEqual(result[0].shapeArea, 500) // Áreas ainda devem ser somadas
+		assert.deepStrictEqual(result[0].geometry.length > 0, true) // Geometria original deve ser mantida
+	})
 })
