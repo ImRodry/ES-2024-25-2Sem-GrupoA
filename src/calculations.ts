@@ -1,4 +1,8 @@
-import { Property } from "./importer.ts"
+import { featureCollection } from "@turf/helpers"
+import union from "@turf/union"
+import { toTurfPolygon } from "./graph.ts"
+import type { Feature, Polygon, MultiPolygon } from "geojson"
+import type { Property } from "./importer.ts"
 
 export function averageArea(properties: Property[], regionType: "freguesia" | "municipio" | "ilha") {
 	return Object.fromEntries(
@@ -7,4 +11,63 @@ export function averageArea(properties: Property[], regionType: "freguesia" | "m
 			return [region, props!.reduce((acc, prop) => acc + prop.shapeArea, 0) / props!.length]
 		})
 	)
+}
+
+export function mergeAdjacentProperties(
+	properties: Property[],
+	adjacencyGraph: Map<number, Set<number>>,
+	regionType: "freguesia" | "municipio" | "ilha"
+): Property[] {
+	const propertyMap = new Map(properties.map(p => [p.objectId, p]))
+	const visited = new Set<number>()
+	const mergedProperties: Property[] = []
+
+	for (const property of properties) {
+		if (visited.has(property.objectId)) continue
+
+		const stack = [property.objectId]
+		const mergedOwner = property.owner
+		const mergedRegion = property[regionType]
+
+		const geometriesToMergeRaw: Property["geometry"][] = []
+		let mergedShapeArea = 0
+
+		while (stack.length > 0) {
+			const currentId = stack.pop()!
+			if (visited.has(currentId)) continue
+			visited.add(currentId)
+
+			const currentProp = propertyMap.get(currentId)
+			if (currentProp) {
+				mergedShapeArea += currentProp.shapeArea
+				geometriesToMergeRaw.push(currentProp.geometry)
+
+				for (const neighborId of adjacencyGraph.get(currentId) || []) {
+					const neighbor = propertyMap.get(neighborId)!
+					if (
+						neighbor.owner === mergedOwner &&
+						neighbor[regionType] === mergedRegion &&
+						!visited.has(neighborId)
+					) {
+						stack.push(neighborId)
+					}
+				}
+			}
+		}
+
+		const geometriesToMerge: Feature<Polygon | MultiPolygon>[] = geometriesToMergeRaw.map(toTurfPolygon)
+
+		let mergedGeometry = geometriesToMerge[0]
+		if (geometriesToMerge.length > 1) {
+			mergedGeometry = union(featureCollection(geometriesToMerge))!
+		}
+
+		mergedProperties.push({
+			...property,
+			shapeArea: mergedShapeArea,
+			geometry: mergedGeometry.geometry.coordinates[0] as [number, number][],
+		})
+	}
+
+	return mergedProperties
 }

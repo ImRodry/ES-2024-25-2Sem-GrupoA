@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { parseCSV, parseProperty, Property } from "./importer.ts"
 import { buildGraph } from "./graph.ts"
-import { averageArea } from "./calculations.ts"
+import { averageArea, mergeAdjacentProperties } from "./calculations.ts"
 
 try {
 	console.time("parseCSV")
@@ -16,26 +16,32 @@ try {
 	}
 	console.timeEnd("parseProperties")
 
-	console.log(`A construir grafos com ${properties.length} propriedades...`)
-	console.time("propriedades")
+	console.log(`Número de propriedades:${properties.length}`)
+	console.time("Grafo de propriedades")
 	const propertyGraph = buildGraph(properties, "objectId")
-	console.timeEnd("propriedades")
+	console.timeEnd("Grafo de propriedades")
 	console.log("Grafo de propriedades (por objectId):")
 	for (const [node, neighbours] of propertyGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
 
-	console.time("owners")
+	console.time("Grafo de proprietários")
 	const ownerGraph = buildGraph(properties, "owner")
-	console.timeEnd("owners")
+	console.timeEnd("Grafo de proprietários")
 
 	console.log("Grafo de proprietários (por owner):")
 	for (const [node, neighbours] of ownerGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
 
+	//Sem adjacencias das propriedades do mesmo proprietário
 	console.log("Média de área por freguesia:")
 	console.log(averageArea(properties, "freguesia"))
 	console.log("Média de área por município:")
 	console.log(averageArea(properties, "municipio"))
 	console.log("Média de área por ilha:")
 	console.log(averageArea(properties, "ilha"))
+
+	console.time("Tempo com adjacencias (freguesia)")
+	const mergedPropertiesbyIlha = mergeAdjacentProperties(properties, propertyGraph, "freguesia")
+	console.log(averageArea(mergedPropertiesbyIlha, "freguesia"))
+	console.timeEnd("Tempo com adjacencias (freguesia)")
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }
