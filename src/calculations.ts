@@ -1,8 +1,8 @@
-import { Property } from "./importer.ts"
-import union from "@turf/union"
 import { featureCollection } from "@turf/helpers"
+import union from "@turf/union"
 import { toTurfPolygon } from "./graph.ts"
 import type { Feature, Polygon, MultiPolygon } from "geojson"
+import type { Property } from "./importer.ts"
 
 export function averageArea(properties: Property[], regionType: "freguesia" | "municipio" | "ilha") {
 	return Object.fromEntries(
