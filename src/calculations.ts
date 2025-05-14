@@ -43,9 +43,8 @@ export function mergeAdjacentProperties(
 				geometriesToMergeRaw.push(currentProp.geometry)
 
 				for (const neighborId of adjacencyGraph.get(currentId) || []) {
-					const neighbor = propertyMap.get(neighborId)
+					const neighbor = propertyMap.get(neighborId)!
 					if (
-						neighbor &&
 						neighbor.owner === mergedOwner &&
 						neighbor[regionType] === mergedRegion &&
 						!visited.has(neighborId)
