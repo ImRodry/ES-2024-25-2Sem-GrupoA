@@ -28,7 +28,8 @@ export function mergeAdjacentProperties(
 		const stack = [property.objectId]
 		const mergedOwner = property.owner
 		const mergedRegion = property[regionType]
-		let mergedGeometry: Feature<Polygon | MultiPolygon> = toTurfPolygon(property.geometry)
+
+		const geometriesToMerge: Feature<Polygon | MultiPolygon>[] = []
 		let mergedShapeArea = 0
 
 		while (stack.length > 0) {
@@ -40,7 +41,7 @@ export function mergeAdjacentProperties(
 			if (currentProp) {
 				mergedShapeArea += currentProp.shapeArea
 				const currentPolygon = toTurfPolygon(currentProp.geometry)
-				mergedGeometry = union(featureCollection([mergedGeometry, currentPolygon])) || mergedGeometry
+				geometriesToMerge.push(currentPolygon)
 
 				for (const neighborId of adjacencyGraph.get(currentId) || []) {
 					const neighbor = propertyMap.get(neighborId)
@@ -54,6 +55,12 @@ export function mergeAdjacentProperties(
 					}
 				}
 			}
+		}
+
+		// Faz a união de todos os polígonos de uma só vez
+		let mergedGeometry = geometriesToMerge[0]
+		if (geometriesToMerge.length > 1) {
+			mergedGeometry = union(featureCollection(geometriesToMerge)) || mergedGeometry
 		}
 
 		mergedProperties.push({

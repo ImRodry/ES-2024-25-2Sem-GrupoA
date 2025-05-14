@@ -38,10 +38,10 @@ try {
 	console.log("Média de área por ilha:")
 	console.log(averageArea(properties, "ilha"))
 
-	console.time("Tempo com adjacencias (ilha)")
-	const mergedPropertiesbyIlha = mergeAdjacentProperties(properties, propertyGraph, "ilha")
-	console.log(averageArea(mergedPropertiesbyIlha, "ilha"))
-	console.timeEnd("Tempo com adjacencias (ilha)")
+	console.time("Tempo com adjacencias (freguesia)")
+	const mergedPropertiesbyIlha = mergeAdjacentProperties(properties, propertyGraph, "freguesia")
+	console.log(averageArea(mergedPropertiesbyIlha, "freguesia"))
+	console.timeEnd("Tempo com adjacencias (freguesia)")
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }
