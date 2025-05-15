@@ -3,6 +3,7 @@ import { parseCSV, parseProperty, Property } from "./importer.ts"
 import { buildGraph } from "./graph.ts"
 import { averageArea } from "./calculations.ts"
 import { mergeAdjacentProperties } from "./mergeProperties.ts"
+import { suggestPropertyExchanges } from "./propertyExchange.ts"
 
 try {
 	console.time("parseCSV")
@@ -43,6 +44,27 @@ try {
 	const mergedProperties = mergeAdjacentProperties(properties, propertyGraph, "freguesia")
 	console.log(averageArea(mergedProperties, "freguesia"))
 	console.timeEnd("Tempo com adjacencias (freguesia)")
+
+	//Sugestões de trocas de propriedades
+	console.log("\nSugestões de trocas de propriedades para maximizar área média:")
+	console.time("Tempo de cálculo das sugestões")
+	const suggestions = suggestPropertyExchanges(properties)
+	console.timeEnd("Tempo de cálculo das sugestões")
+
+	if (suggestions.length === 0) {
+		console.log("Não foram encontradas trocas que melhorariam a área média")
+	} else {
+		suggestions.forEach((suggestion, index) => {
+			console.log(`\nSugestão ${index + 1}:`)
+			console.log(
+				`Proprietário ${suggestion.owner1} troca a propriedade ${suggestion.property1.objectId} (área: ${suggestion.property1.shapeArea})`
+			)
+			console.log(
+				`com Proprietário ${suggestion.owner2} pela propriedade ${suggestion.property2.objectId} (área: ${suggestion.property2.shapeArea})`
+			)
+			console.log(`Melhoria total na área média: ${suggestion.areaImprovement.toFixed(2)}`)
+		})
+	}
 } catch (error) {
 	console.error("Erro ao processar o CSV:", error)
 }
