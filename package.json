@@ -5,7 +5,8 @@
 	"main": "dist/src/index.js",
 	"scripts": {
 		"postinstall": "tsc",
-		"test": "node --test ./dist/tests/**/*.test.js"
+		"test": "node --test ./dist/tests/**/*.test.js",
+		"coverage": "c8 npm test"
 	},
 	"repository": {
 		"type": "git",
@@ -29,6 +30,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.13.14",
-		"@types/rbush": "^4.0.0"
+		"@types/rbush": "^4.0.0",
+		"c8": "^10.1.3"
 	}
 }
