@@ -4,6 +4,12 @@ import { toTurfPolygon } from "./graph.ts"
 import type { Feature, Polygon, MultiPolygon } from "geojson"
 import type { Property } from "./importer.ts"
 
+/**
+ * Calculates the average area of properties grouped by a specified region type (freguesia, municipio, ilha).
+ * @param properties Array of properties to calculate the average area for.
+ * @param regionType The type of region to group properties by (freguesia, municipio, ilha).
+ * @returns An object of region names mapped to the average area of properties in that region.
+ */
 export function averageArea(properties: Property[], regionType: "freguesia" | "municipio" | "ilha") {
 	return Object.fromEntries(
 		Object.entries(Object.groupBy(properties, prop => prop[regionType])).map(([region, props]) => {
@@ -13,6 +19,13 @@ export function averageArea(properties: Property[], regionType: "freguesia" | "m
 	)
 }
 
+/**
+ * Merges adjacent properties of the same owner based on their adjacency graph and a specified region type (freguesia, municipio, ilha).
+ * @param properties Array of properties to merge.
+ * @param adjacencyGraph Adjacency graph of properties.
+ * @param regionType The type of region to merge properties by (freguesia, municipio, ilha).
+ * @returns An array of merged properties.
+ */
 export function mergeAdjacentProperties(
 	properties: Property[],
 	adjacencyGraph: Map<number, Set<number>>,
