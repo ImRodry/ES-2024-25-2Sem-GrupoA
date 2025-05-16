@@ -1,4 +1,4 @@
-import { importCSV, Property } from "./importer"
+import { parseCSV, parseProperty, Property } from "./importer.ts"
 import { writeFileSync } from "fs"
 import proj4 from "proj4"
 
@@ -14,7 +14,9 @@ function convertGeometry(coords: [number, number][]): [number, number][] {
 const CSV_PATH = "data/Madeira-Moodle-1.1.csv"
 
 try {
-	const allProperties: Property[] = importCSV(CSV_PATH)
+	const allProperties: Property[] = parseCSV(CSV_PATH)
+		.map(parseProperty)
+		.filter(p => p !== null)
 	console.log(`Total importado: ${allProperties.length}`)
 
 	const properties = allProperties.slice(0, 500)
@@ -24,7 +26,7 @@ try {
 		geometry: convertGeometry(p.geometry),
 		owner: p.owner,
 		freguesia: p.freguesia,
-		municipio: p.municipio
+		municipio: p.municipio,
 	}))
 
 	writeFileSync("Visualizador/propriedades.json", JSON.stringify(propertiesForGUI, null, 2))
