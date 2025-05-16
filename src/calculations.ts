@@ -24,7 +24,7 @@ export function averageArea(properties: Property[], regionType: "freguesia" | "m
  * @param properties Array of properties to merge.
  * @param adjacencyGraph Adjacency graph of properties.
  * @param regionType The type of region to merge properties by (freguesia, municipio, ilha).
- * @returns An array of merged properties that are adjacent and have the same owner and region type.
+ * @returns An array of merged properties.
  */
 export function mergeAdjacentProperties(
 	properties: Property[],
