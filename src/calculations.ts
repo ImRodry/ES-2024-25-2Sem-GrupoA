@@ -96,22 +96,20 @@ export function mergeAdjacentProperties(
 		}
 
 		// converte para Features
-		const features = geometriesRaw.map(toTurfPolygon)
+		const features: Feature<Polygon | MultiPolygon>[] = geometriesRaw.map(toTurfPolygon)
 
 		// une geometrias: tenta union, mas em caso de null, usa primeiro feature
-		let mergedFeat: Feature<Polygon | MultiPolygon>
+		let mergedFeat
 		if (features.length > 1) {
 			mergedFeat = union(featureCollection(features))!
 		} else {
 			mergedFeat = features[0]
 		}
 
-		const exteriorRing = extractExteriorRing(mergedFeat)
-
 		mergedProperties.push({
 			...property,
 			shapeArea: mergedShapeArea,
-			geometry: exteriorRing,
+			geometry: extractExteriorRing(mergedFeat),
 		})
 	}
 
