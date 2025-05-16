@@ -1,6 +1,6 @@
 import { test, suite } from "node:test"
 import assert from "node:assert"
-import { extractExteriorRing, mergeAdjacentProperties } from "./mergeProperties.ts"
+import { extractExteriorRing, mergeAdjacentProperties } from "../src/mergeProperties.ts"
 import type { Feature, MultiPolygon } from "geojson"
 import type { Property } from "./importer.ts"
 
