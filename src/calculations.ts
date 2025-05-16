@@ -20,6 +20,28 @@ export function averageArea(properties: Property[], regionType: "freguesia" | "m
 }
 
 /**
+ * Extrai o anel exterior de um Feature<Polygon|MultiPolygon> e garante que está fechado.
+ */
+export function extractExteriorRing(feat: Feature<Polygon | MultiPolygon>): [number, number][] {
+	let ring: [number, number][]
+
+	if (feat.geometry.type === "Polygon") {
+		ring = feat.geometry.coordinates[0] as [number, number][]
+	} else {
+		// MultiPolygon: primeiro polí­gono, anel exterior
+		ring = feat.geometry.coordinates[0][0] as [number, number][]
+	}
+
+	const first = ring[0]
+	const last = ring[ring.length - 1]
+	if (first[0] !== last[0] || first[1] !== last[1]) {
+		ring = [...ring, first]
+	}
+
+	return ring
+}
+
+/**
  * Merges adjacent properties of the same owner based on their adjacency graph and a specified region type (freguesia, municipio, ilha).
  * @param properties Array of properties to merge.
  * @param adjacencyGraph Adjacency graph of properties.
@@ -42,7 +64,7 @@ export function mergeAdjacentProperties(
 		const mergedOwner = property.owner
 		const mergedRegion = property[regionType]
 
-		const geometriesToMergeRaw: Property["geometry"][] = []
+		const geometriesRaw: Property["geometry"][] = []
 		let mergedShapeArea = 0
 
 		while (stack.length > 0) {
@@ -51,34 +73,45 @@ export function mergeAdjacentProperties(
 			visited.add(currentId)
 
 			const currentProp = propertyMap.get(currentId)
-			if (currentProp) {
-				mergedShapeArea += currentProp.shapeArea
-				geometriesToMergeRaw.push(currentProp.geometry)
+			if (!currentProp) continue
 
-				for (const neighborId of adjacencyGraph.get(currentId) || []) {
-					const neighbor = propertyMap.get(neighborId)!
-					if (
-						neighbor.owner === mergedOwner &&
-						neighbor[regionType] === mergedRegion &&
-						!visited.has(neighborId)
-					) {
-						stack.push(neighborId)
-					}
+			mergedShapeArea += currentProp.shapeArea
+			geometriesRaw.push(currentProp.geometry)
+
+			const neighbors = adjacencyGraph.get(currentId)
+			if (!neighbors) continue
+
+			for (const neighborId of neighbors) {
+				const neighbor = propertyMap.get(neighborId)
+				if (
+					neighbor &&
+					neighbor.owner === mergedOwner &&
+					neighbor[regionType] === mergedRegion &&
+					!visited.has(neighborId)
+				) {
+					stack.push(neighborId)
 				}
 			}
 		}
 
-		const geometriesToMerge: Feature<Polygon | MultiPolygon>[] = geometriesToMergeRaw.map(toTurfPolygon)
+		// converte para Features
+		const features = geometriesRaw.map(toTurfPolygon)
 
-		let mergedGeometry = geometriesToMerge[0]
-		if (geometriesToMerge.length > 1) {
-			mergedGeometry = union(featureCollection(geometriesToMerge))!
+		// une geometrias: tenta union, mas em caso de null, usa primeiro feature
+		let mergedFeat: Feature<Polygon | MultiPolygon>
+		if (features.length > 1) {
+			const u = union(featureCollection(features))
+			mergedFeat = u ?? features[0]
+		} else {
+			mergedFeat = features[0]
 		}
+
+		const exteriorRing = extractExteriorRing(mergedFeat)
 
 		mergedProperties.push({
 			...property,
 			shapeArea: mergedShapeArea,
-			geometry: mergedGeometry.geometry.coordinates[0] as [number, number][],
+			geometry: exteriorRing,
 		})
 	}
 
