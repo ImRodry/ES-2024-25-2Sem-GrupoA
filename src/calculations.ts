@@ -20,7 +20,9 @@ export function averageArea(properties: Property[], regionType: "freguesia" | "m
 }
 
 /**
- * Extrai o anel exterior de um Feature<Polygon|MultiPolygon> e garante que está fechado.
+ * Converts a polygon or a multipolygon to an array of coordinates, whilst making sure the polygon is closed (first and last coordinates are the same).
+ * @param feat Feature object containing the polygon or multipolygon geometry.
+ * @returns An array of coordinates from the polygon or multipolygon.
  */
 export function extractExteriorRing(feat: Feature<Polygon | MultiPolygon>): [number, number][] {
 	let ring: [number, number][]
