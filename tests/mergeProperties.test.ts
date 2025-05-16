@@ -1,11 +1,10 @@
 import { test, suite } from "node:test"
 import assert from "node:assert"
-import { featureCollection, polygon } from "@turf/helpers"
-import union from "@turf/union"
-import { mergeAdjacentProperties } from "../src/calculations.ts"
-import type { Property } from "../src/importer.ts"
+import { extractExteriorRing, mergeAdjacentProperties } from "../src/mergeProperties.ts"
+import type { Feature, MultiPolygon } from "geojson"
+import type { Property } from "./importer.ts"
 
-suite("mergeAdjacentProperties tests", () => {
+suite("Merge properties tests", () => {
 	const sampleProperties: Property[] = [
 		{
 			objectId: 1,
@@ -168,5 +167,130 @@ suite("mergeAdjacentProperties tests", () => {
 		const result = mergeAdjacentProperties(invalidProperties, adjacencyGraph, "freguesia")
 		assert.deepStrictEqual(result[0].shapeArea, 500) // Áreas ainda devem ser somadas
 		assert.deepStrictEqual(result[0].geometry.length > 0, true) // Geometria original deve ser mantida
+	})
+
+	test("should close geometry when input is not closed", () => {
+		const sample: Property[] = [
+			{
+				objectId: 1,
+				parId: 1,
+				parNum: 1,
+				shapeLength: 10,
+				shapeArea: 50,
+				// sem repetir o primeiro ponto no fim
+				geometry: [
+					[0, 0],
+					[1, 0],
+					[1, 1],
+					[0, 1],
+				],
+				owner: 1,
+				freguesia: "X",
+				municipio: "M",
+				ilha: "I",
+			},
+		]
+		const graph = new Map<number, Set<number>>([[1, new Set()]])
+		const result = mergeAdjacentProperties(sample, graph, "freguesia")
+		const geom = result[0].geometry
+		// deve ter fechado o anel (>=5 pontos e primeiro == último)
+		assert.ok(geom.length >= 5)
+		assert.deepStrictEqual(geom[0], geom[geom.length - 1])
+	})
+
+	test("should extract exterior ring from MultiPolygon fallback", () => {
+		// Criamos manualmente um Feature que simula um MultiPolygon
+		// mas neste caso, a função de merge vai ver duas geometrias disjuntas
+		// e usar o fallback (first feature) sem falhar.
+		const props: Property[] = [
+			{
+				objectId: 1,
+				parId: 1,
+				parNum: 1,
+				shapeLength: 10,
+				shapeArea: 30,
+				geometry: [
+					[0, 0],
+					[2, 0],
+					[2, 2],
+					[0, 2],
+					[0, 0],
+				],
+				owner: 1,
+				freguesia: "Y",
+				municipio: "M",
+				ilha: "I",
+			},
+			{
+				objectId: 2,
+				parId: 2,
+				parNum: 2,
+				shapeLength: 10,
+				shapeArea: 40,
+				geometry: [
+					[10, 10],
+					[12, 10],
+					[12, 12],
+					[10, 12],
+					[10, 10],
+				],
+				owner: 1,
+				freguesia: "Y",
+				municipio: "M",
+				ilha: "I",
+			},
+		]
+		const graph = new Map<number, Set<number>>([
+			[1, new Set([2])],
+			[2, new Set([1])],
+		])
+
+		const result = mergeAdjacentProperties(props, graph, "freguesia")
+		// fallback deve manter a primeira geometria
+		const geom = result[0].geometry
+		assert.deepStrictEqual(geom[0], [0, 0])
+		assert.deepStrictEqual(geom[geom.length - 1], [0, 0])
+	})
+
+	test("extractExteriorRing: MultiPolygon sem fechar anel deve extrair primeiro polígono e fechar", () => {
+		const multi: Feature<MultiPolygon> = {
+			type: "Feature",
+			properties: {},
+			geometry: {
+				type: "MultiPolygon",
+				coordinates: [
+					// Primeiro MultiPolygon: anel não fechado
+					[
+						[
+							[0, 0],
+							[1, 0],
+							[1, 1],
+							[0, 1],
+							// repete o primeiro ponto no fim está em falta
+						],
+					],
+					// Segundo polígono (irrelevante para esta extração)
+					[
+						[
+							[10, 10],
+							[11, 10],
+							[11, 11],
+							[10, 11],
+							[10, 10],
+						],
+					],
+				],
+			},
+		}
+
+		const ring = extractExteriorRing(multi)
+
+		// Deve extrair apenas o primeiro anel do primeiro polígono...
+		assert.deepStrictEqual(ring[0], [0, 0])
+		// ...e fechar o anel adicionando o primeiro ponto no fim
+		const last = ring[ring.length - 1]
+		assert.deepStrictEqual(last, [0, 0])
+		// Comprimento esperado: 5 (4 originais + 1 de fecho)
+		assert.strictEqual(ring.length, 5)
 	})
 })
