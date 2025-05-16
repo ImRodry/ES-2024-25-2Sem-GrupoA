@@ -72,8 +72,7 @@ export function mergeAdjacentProperties(
 			if (visited.has(currentId)) continue
 			visited.add(currentId)
 
-			const currentProp = propertyMap.get(currentId)
-			if (!currentProp) continue
+			const currentProp = propertyMap.get(currentId)!
 
 			mergedShapeArea += currentProp.shapeArea
 			geometriesRaw.push(currentProp.geometry)
@@ -100,8 +99,7 @@ export function mergeAdjacentProperties(
 		// une geometrias: tenta union, mas em caso de null, usa primeiro feature
 		let mergedFeat: Feature<Polygon | MultiPolygon>
 		if (features.length > 1) {
-			const u = union(featureCollection(features))
-			mergedFeat = u ?? features[0]
+			mergedFeat = union(featureCollection(features))!
 		} else {
 			mergedFeat = features[0]
 		}

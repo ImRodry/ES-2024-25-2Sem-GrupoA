@@ -1,7 +1,8 @@
 import { test, suite } from "node:test"
 import assert from "node:assert"
-import { averageArea, mergeAdjacentProperties } from "../src/calculations.ts"
+import { averageArea, extractExteriorRing, mergeAdjacentProperties } from "../src/calculations.ts"
 import type { Property } from "./importer.ts"
+import type { Feature, MultiPolygon } from "geojson"
 
 const sampleProperties: Property[] = [
 	{
@@ -348,5 +349,47 @@ suite("Calculation tests", () => {
 		const geom = result[0].geometry
 		assert.deepStrictEqual(geom[0], [0, 0])
 		assert.deepStrictEqual(geom[geom.length - 1], [0, 0])
+	})
+
+	test("extractExteriorRing: MultiPolygon sem fechar anel deve extrair primeiro polígono e fechar", () => {
+		const multi: Feature<MultiPolygon> = {
+			type: "Feature",
+			properties: {},
+			geometry: {
+				type: "MultiPolygon",
+				coordinates: [
+					// Primeiro MultiPolygon: anel não fechado
+					[
+						[
+							[0, 0],
+							[1, 0],
+							[1, 1],
+							[0, 1],
+							// repete o primeiro ponto no fim está em falta
+						],
+					],
+					// Segundo polígono (irrelevante para esta extração)
+					[
+						[
+							[10, 10],
+							[11, 10],
+							[11, 11],
+							[10, 11],
+							[10, 10],
+						],
+					],
+				],
+			},
+		}
+
+		const ring = extractExteriorRing(multi)
+
+		// Deve extrair apenas o primeiro anel do primeiro polígono...
+		assert.deepStrictEqual(ring[0], [0, 0])
+		// ...e fechar o anel adicionando o primeiro ponto no fim
+		const last = ring[ring.length - 1]
+		assert.deepStrictEqual(last, [0, 0])
+		// Comprimento esperado: 5 (4 originais + 1 de fecho)
+		assert.strictEqual(ring.length, 5)
 	})
 })
