@@ -1,5 +1,5 @@
-import type { Property } from "./importer.js"
-import { mergeAdjacentProperties } from "./calculations.js"
+import type { Property } from "./importer.ts"
+import { mergeAdjacentProperties } from "./calculations.ts"
 
 interface PropertyExchange {
     owner1: number
@@ -73,6 +73,11 @@ function calculateExchangeScore(
     const newAvg1 = newArea1 / owner1Metrics.propertyCount
     const newAvg2 = newArea2 / owner2Metrics.propertyCount
     
+    // If both averages would get worse or stay the same, return 0
+    if (newAvg1 <= oldAvg1 && newAvg2 <= oldAvg2) {
+        return 0
+    }
+    
     const areaImprovement = Math.abs(newAvg1 - oldAvg1) + Math.abs(newAvg2 - oldAvg2)
     const mergedAreaImprovement = Math.abs(newAvg1 - oldAvg1) * 1.5 // Estimativa simplificada para merged
     const sameFreguesia = prop1.freguesia === prop2.freguesia
@@ -117,8 +122,8 @@ export function suggestPropertyExchanges(
     
     // Para cada propriedade
     for (const property of properties) {
-        // Verificar se o owner já atingiu o limite de sugestões
-        if (ownerSuggestionCount.get(property.owner) === maxSuggestionsPerOwner) {
+        // Skip if owner already has max suggestions
+        if ((ownerSuggestionCount.get(property.owner) || 0) >= maxSuggestionsPerOwner) {
             continue
         }
         
@@ -126,8 +131,8 @@ export function suggestPropertyExchanges(
         const adjacentOwners = findAdjacentOwners(property, propertyGraph, properties)
         
         for (const adjacentOwner of adjacentOwners) {
-            // Verificar se o owner adjacente já atingiu o limite de sugestões
-            if (ownerSuggestionCount.get(adjacentOwner) === maxSuggestionsPerOwner) {
+            // Skip if adjacent owner already has max suggestions
+            if ((ownerSuggestionCount.get(adjacentOwner) || 0) >= maxSuggestionsPerOwner) {
                 continue
             }
             
@@ -161,21 +166,23 @@ export function suggestPropertyExchanges(
                         sameFreguesia: property.freguesia === prop2.freguesia,
                         totalScore: score
                     })
+                    
+                    // Update suggestion counts for both owners
+                    ownerSuggestionCount.set(property.owner, (ownerSuggestionCount.get(property.owner) || 0) + 1)
+                    ownerSuggestionCount.set(adjacentOwner, (ownerSuggestionCount.get(adjacentOwner) || 0) + 1)
+                    
+                    // Break if either owner reaches their limit
+                    if ((ownerSuggestionCount.get(property.owner) || 0) >= maxSuggestionsPerOwner ||
+                        (ownerSuggestionCount.get(adjacentOwner) || 0) >= maxSuggestionsPerOwner) {
+                        break
+                    }
                 }
             }
         }
     }
     
     // Ordenar sugestões por score e limitar ao número máximo
-    const finalSuggestions = suggestions
+    return suggestions
         .sort((a, b) => b.totalScore - a.totalScore)
         .slice(0, maxSuggestions)
-    
-    // Atualizar contagem de sugestões por owner
-    for (const suggestion of finalSuggestions) {
-        ownerSuggestionCount.set(suggestion.owner1, (ownerSuggestionCount.get(suggestion.owner1) || 0) + 1)
-        ownerSuggestionCount.set(suggestion.owner2, (ownerSuggestionCount.get(suggestion.owner2) || 0) + 1)
-    }
-    
-    return finalSuggestions
 } 
