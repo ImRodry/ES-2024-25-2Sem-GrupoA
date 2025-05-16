@@ -1,6 +1,7 @@
 import { describe, it } from "node:test"
 import assert from "node:assert"
 import { suggestPropertyExchanges } from "../src/propertyExchange.js"
+import { buildGraph } from "../src/graph.js"
 import type { Property } from "../src/importer.js"
 
 describe("Testes de Troca de Propriedades", () => {
@@ -58,14 +59,15 @@ describe("Testes de Troca de Propriedades", () => {
             }
         ]
 
-        const suggestions = suggestPropertyExchanges(properties)
+        const propertyGraph = buildGraph(properties, "objectId")
+        const suggestions = suggestPropertyExchanges(properties, propertyGraph)
         
         assert.ok(suggestions.length > 0, "Deve retornar pelo menos uma sugestão")
         const suggestion = suggestions[0]
         
         // Verifica se a sugestão tem todas as novas propriedades
         assert.ok('areaImprovement' in suggestion, "Deve incluir melhoria de área")
-        assert.ok('lengthImprovement' in suggestion, "Deve incluir melhoria de perímetro")
+        assert.ok('mergedAreaImprovement' in suggestion, "Deve incluir melhoria de área após merge")
         assert.ok('sameFreguesia' in suggestion, "Deve incluir comparação de freguesia")
         assert.ok('totalScore' in suggestion, "Deve incluir pontuação total")
         
@@ -116,7 +118,8 @@ describe("Testes de Troca de Propriedades", () => {
             }
         ]
 
-        const suggestions = suggestPropertyExchanges(properties)
+        const propertyGraph = buildGraph(properties, "objectId")
+        const suggestions = suggestPropertyExchanges(properties, propertyGraph)
         
         // Verifica se a primeira sugestão é entre propriedades da mesma freguesia
         if (suggestions.length > 0) {
@@ -153,7 +156,8 @@ describe("Testes de Troca de Propriedades", () => {
             }
         ]
 
-        const suggestions = suggestPropertyExchanges(properties)
+        const propertyGraph = buildGraph(properties, "objectId")
+        const suggestions = suggestPropertyExchanges(properties, propertyGraph)
         assert.strictEqual(suggestions.length, 0, "Deve retornar sem sugestões quando não existirem trocas benéficas")
     })
 }) 

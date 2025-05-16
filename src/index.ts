@@ -8,6 +8,7 @@ import { suggestPropertyExchanges } from "./propertyExchange.ts"
 try {
 	console.time("parseCSV")
 	const rawProps = parseCSV(readFileSync("data/Madeira-Moodle-1.1.csv", "utf-8"))
+	console.log("CSV lido com sucesso. Número de linhas:", rawProps.length)
 	console.timeEnd("parseCSV")
 
 	console.time("parseProperties")
@@ -16,11 +17,20 @@ try {
 		const prop = parseProperty(rawProp)
 		if (prop) properties.push(prop)
 	}
+	console.log("Properties parseadas com sucesso. Número de propriedades válidas:", properties.length)
 	console.timeEnd("parseProperties")
+
+	// Verificar se há propriedades com owner undefined
+	const invalidProperties = properties.filter(p => p.owner === undefined)
+	if (invalidProperties.length > 0) {
+		console.log("AVISO: Encontradas propriedades sem owner:", invalidProperties.length)
+		console.log("Primeira propriedade inválida:", invalidProperties[0])
+	}
 
 	console.log(`Número de propriedades:${properties.length}`)
 	console.time("Grafo de propriedades")
 	const propertyGraph = buildGraph(properties, "objectId")
+	console.log("Grafo de propriedades construído. Número de nós:", propertyGraph.size)
 	console.timeEnd("Grafo de propriedades")
 	console.log("Grafo de propriedades (por objectId):")
 	for (const [node, neighbours] of propertyGraph.entries()) console.log(`${node} -> ${[...neighbours].join(", ")}`)
@@ -48,7 +58,7 @@ try {
 	//Sugestões de trocas de propriedades
 	console.log("\nSugestões de trocas de propriedades para maximizar área média:")
 	console.time("Tempo de cálculo das sugestões")
-	const suggestions = suggestPropertyExchanges(properties)
+	const suggestions = suggestPropertyExchanges(properties, propertyGraph)
 	console.timeEnd("Tempo de cálculo das sugestões")
 
 	if (suggestions.length === 0) {
@@ -62,7 +72,10 @@ try {
 			console.log(
 				`com Proprietário ${suggestion.owner2} pela propriedade ${suggestion.property2.objectId} (área: ${suggestion.property2.shapeArea})`
 			)
-			console.log(`Melhoria total na área média: ${suggestion.areaImprovement.toFixed(2)}`)
+			console.log(`Melhoria na área média: ${suggestion.areaImprovement.toFixed(2)}`)
+			console.log(`Melhoria na área média após merge: ${suggestion.mergedAreaImprovement.toFixed(2)}`)
+			console.log(`Mesma freguesia: ${suggestion.sameFreguesia ? "Sim" : "Não"}`)
+			console.log(`Score total: ${suggestion.totalScore.toFixed(2)}`)
 		})
 	}
 } catch (error) {
