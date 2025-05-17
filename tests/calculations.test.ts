@@ -2,7 +2,6 @@ import { test, suite } from "node:test"
 import assert from "node:assert"
 import { averageArea } from "../src/calculations.ts"
 import type { Property } from "./importer.ts"
-import type { Feature, MultiPolygon } from "geojson"
 
 const sampleProperties: Property[] = [
 	{
