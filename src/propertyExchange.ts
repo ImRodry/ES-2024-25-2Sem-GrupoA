@@ -1,6 +1,5 @@
 import { writeFileSync } from "node:fs"
 import type { Property } from "./importer.ts"
-import { buildGraph } from "./graph.ts"
 
 /**
  * Calculates initial metrics for each owner based on their properties (area, count, etc.).
@@ -32,7 +31,7 @@ function calculateOwnerMetrics(mergedProps: Property[]): Map<number, OwnerMetric
  * @param owner2Metrics Metrics for the second owner.
  * @param prop1 First property to exchange.
  * @param prop2 Second property to exchange.
- * @param areAdjacent Whether the properties are adjacent.
+ * @param bothTouch Whether both properties touch others from the same owner (or just the first one)
  * @returns The calculated exchange score.
  */
 export function calculateExchangeScore(
@@ -66,6 +65,7 @@ export function calculateExchangeScore(
  * Suggests property exchanges to maximize average area for owners.
  * @param mergedProperties Array of properties to suggest exchanges for.
  * @param mergedGraph Graph of properties to find adjacent properties.
+ * @param mergedGraph Graph of owners to adjacent owners.
  * @param maxSuggestions Maximum number of suggestions to return.
  * @param maxSuggestionsPerOwner Maximum number of suggestions per owner.
  * @returns Array of suggested property exchanges.
