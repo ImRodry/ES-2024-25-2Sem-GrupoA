@@ -1,12 +1,12 @@
 {
   "statistics": {
-    "detectionDate": "2025-05-17T02:08:25.064Z",
+    "detectionDate": "2025-05-17T11:30:58.069Z",
     "formats": {
       "typescript": {
         "sources": {
           "./src/mergeProperties.ts": {
             "lines": 102,
-            "tokens": 933,
+            "tokens": 841,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -18,7 +18,7 @@
           },
           "./src/index.ts": {
             "lines": 48,
-            "tokens": 555,
+            "tokens": 507,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -30,7 +30,7 @@
           },
           "./src/importer.ts": {
             "lines": 87,
-            "tokens": 783,
+            "tokens": 709,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -42,7 +42,7 @@
           },
           "./src/graph.ts": {
             "lines": 73,
-            "tokens": 707,
+            "tokens": 648,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -54,7 +54,7 @@
           },
           "./src/calculations.ts": {
             "lines": 16,
-            "tokens": 156,
+            "tokens": 145,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -67,7 +67,7 @@
         },
         "total": {
           "lines": 326,
-          "tokens": 3134,
+          "tokens": 2850,
           "sources": 5,
           "clones": 0,
           "duplicatedLines": 0,
@@ -81,7 +81,7 @@
     },
     "total": {
       "lines": 326,
-      "tokens": 3134,
+      "tokens": 2850,
       "sources": 5,
       "clones": 0,
       "duplicatedLines": 0,
@@ -93,5 +93,5 @@
     }
   },
   "duplicates": [],
-  "filename": "C:\\Users\\gonca\\AppData\\Local\\npm-cache\\_npx\\916a513c5a32ee11\\node_modules\\@jscpd\\html-reporter\\dist\\templates\\main.pug"
+  "filename": "/home/runner/work/ES-2024-25-2Sem-GrupoA/ES-2024-25-2Sem-GrupoA/node_modules/@jscpd/html-reporter/dist/templates/main.pug"
 }
