@@ -68,6 +68,6 @@ type RBushType = BBox & { index: number }
 /**
  * Names of the properties that can be used as node identifiers in the graph.
  */
-export type IndexablePropertyKeys = {
+type IndexablePropertyKeys = {
 	[K in keyof Property]: Property[K] extends keyof any ? K : never
 }[keyof Property]

@@ -1,6 +1,0 @@
-objectid;par_id;par_num;shape_length;shape_area;geometry;owner;freguesia;municipio;ilha
-1;1;1;40;100;MULTIPOLYGON (((0.0 0.0, 1.0 0.0, 1.0 1.0, 0.0 1.0, 0.0 0.0)));1;Freguesia A;Município X;Ilha Y
-2;2;2;40;200;MULTIPOLYGON (((1.0 0.0, 2.0 0.0, 2.0 1.0, 1.0 1.0, 1.0 0.0)));1;Freguesia A;Município X;Ilha Y
-3;3;3;60;400;MULTIPOLYGON (((2.0 0.0, 3.0 0.0, 3.0 1.0, 2.0 1.0, 2.0 0.0)));2;Freguesia A;Município X;Ilha Y
-4;4;4;40;200;MULTIPOLYGON (((3.0 0.0, 4.0 0.0, 4.0 1.0, 3.0 1.0, 3.0 0.0)));2;Freguesia B;Município X;Ilha Y
-5;5;5;50;300;MULTIPOLYGON (((4.0 0.0, 5.0 0.0, 5.0 1.0, 4.0 1.0, 4.0 0.0)));3;Freguesia B;Município X;Ilha Y 

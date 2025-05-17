@@ -1,32 +1,6 @@
+import { writeFileSync } from "node:fs"
 import type { Property } from "./importer.ts"
-import { mergeAdjacentProperties } from "./calculations.ts"
-
-/**
- * Object representing a property exchange suggestion.
- */
-interface PropertyExchange {
-	owner1: number
-	owner2: number
-	property1: Property
-	property2: Property
-	areaImprovement: number
-	mergedAreaImprovement: number
-	sameFreguesia: boolean
-	totalScore: number
-}
-
-/**
- * Object representing the metrics for an owner.
- */
-interface OwnerMetrics {
-	totalArea: number
-	propertyCount: number
-	averageArea: number
-	properties: Property[]
-	mergedArea: number
-	mergedCount: number
-	mergedAverageArea: number
-}
+import { buildGraph } from "./graph.ts"
 
 /**
  * Calculates initial metrics for each owner based on their properties (area, count, etc.).
@@ -34,35 +8,18 @@ interface OwnerMetrics {
  * @param propertyGraph Graph of properties to find adjacent properties.
  * @returns Map of owner IDs to their metrics.
  */
-function calculateInitialMetrics(
-	properties: Property[],
-	propertyGraph: Map<number, Set<number>>
-): Map<number, OwnerMetrics> {
+function calculateOwnerMetrics(mergedProps: Property[]): Map<number, OwnerMetrics> {
 	const ownerMetrics = new Map<number, OwnerMetrics>()
 
-	// Agrupar propriedades por owner
-	const ownerProperties = new Map<number, Property[]>()
-	for (const prop of properties) {
-		if (!ownerProperties.has(prop.owner)) {
-			ownerProperties.set(prop.owner, [])
-		}
-		ownerProperties.get(prop.owner)!.push(prop)
-	}
-
 	// Calcular métricas para cada owner
-	for (const [owner, props] of ownerProperties) {
-		const totalArea = props.reduce((sum, p) => sum + p.shapeArea, 0)
-		const mergedProps = mergeAdjacentProperties(props, propertyGraph, "freguesia")
-		const mergedArea = mergedProps.reduce((sum, p) => sum + p.shapeArea, 0)
+	for (const [owner, props] of Object.entries(Object.groupBy(mergedProps, prop => prop.owner))) {
+		const totalArea = props!.reduce((sum, p) => sum + p.shapeArea, 0)
 
-		ownerMetrics.set(owner, {
+		ownerMetrics.set(Number(owner), {
 			totalArea,
-			propertyCount: props.length,
-			averageArea: totalArea / props.length,
-			properties: props,
-			mergedArea,
-			mergedCount: mergedProps.length,
-			mergedAverageArea: mergedArea / mergedProps.length,
+			propertyCount: props!.length,
+			averageArea: totalArea / props!.length,
+			properties: props!,
 		})
 	}
 
@@ -78,146 +35,155 @@ function calculateInitialMetrics(
  * @param areAdjacent Whether the properties are adjacent.
  * @returns The calculated exchange score.
  */
-function calculateExchangeScore(
+export function calculateExchangeScore(
 	owner1Metrics: OwnerMetrics,
 	owner2Metrics: OwnerMetrics,
 	prop1: Property,
 	prop2: Property,
-	areAdjacent: boolean
+	bothTouch: boolean
 ): number {
-	// Simular troca sem criar novos arrays
-	const newArea1 = owner1Metrics.totalArea - prop1.shapeArea + prop2.shapeArea
-	const newArea2 = owner2Metrics.totalArea - prop2.shapeArea + prop1.shapeArea
-
-	const oldAvg1 = owner1Metrics.averageArea
-	const oldAvg2 = owner2Metrics.averageArea
-	const newAvg1 = newArea1 / owner1Metrics.propertyCount
-	const newAvg2 = newArea2 / owner2Metrics.propertyCount
-
-	// If both averages would get worse or stay the same, return 0
-	if (newAvg1 <= oldAvg1 && newAvg2 <= oldAvg2) {
-		return 0
+	// If owner2's property doesn't touch and is smaller, skip
+	if (!bothTouch && prop2.shapeArea > prop1.shapeArea) {
+		return -Infinity
 	}
 
-	const areaImprovement = Math.abs(newAvg1 - oldAvg1) + Math.abs(newAvg2 - oldAvg2)
-	const mergedAreaImprovement = Math.abs(newAvg1 - oldAvg1) * 1.5 // Estimativa simplificada para merged
-	const sameFreguesia = prop1.freguesia === prop2.freguesia
+	const averageAreaDiff =
+		(owner1Metrics.totalArea + owner2Metrics.totalArea) /
+			(owner1Metrics.propertyCount + owner2Metrics.propertyCount - (bothTouch ? 2 : 1)) -
+		(owner1Metrics.totalArea + owner2Metrics.totalArea) /
+			(owner1Metrics.propertyCount + owner2Metrics.propertyCount)
+	const bothTouchWeight = bothTouch ? 2 : prop1.freguesia === prop2.freguesia ? 1 : 0
 
-	return areaImprovement * 0.3 + mergedAreaImprovement * 0.4 + (sameFreguesia ? 0.2 : 0) + (areAdjacent ? 0.1 : 0)
-}
-
-/**
- * Finds adjacent owners for a given property based on the property graph.
- * @param property The property to find adjacent owners for.
- * @param propertyGraph Graph of properties to find adjacent properties.
- * @param properties Array of properties to find adjacent owners from.
- * @returns Set of owner IDs that are adjacent to the given property.
- */
-function findAdjacentOwners(
-	property: Property,
-	propertyGraph: Map<number, Set<number>>,
-	properties: Property[]
-): Set<number> {
-	const adjacentOwners = new Set<number>()
-	const neighbors = propertyGraph.get(property.objectId)
-	if (!neighbors) return adjacentOwners
-
-	const propertyMap = new Map(properties.map(p => [p.objectId, p]))
-	for (const neighborId of neighbors) {
-		const neighbor = propertyMap.get(neighborId)
-		if (neighbor && neighbor.owner !== property.owner) {
-			adjacentOwners.add(neighbor.owner)
-		}
-	}
-
-	return adjacentOwners
+	return (
+		(-Math.abs(prop1.shapeArea - prop2.shapeArea) * 2) /
+			// Ratio of areas - the higher the ratio, the better
+			(Math.min(prop1.shapeArea, prop2.shapeArea) / Math.max(prop1.shapeArea, prop2.shapeArea)) +
+		averageAreaDiff * bothTouchWeight
+	)
 }
 
 /**
  * Suggests property exchanges to maximize average area for owners.
- * @param properties Array of properties to suggest exchanges for.
- * @param propertyGraph Graph of properties to find adjacent properties.
+ * @param mergedProperties Array of properties to suggest exchanges for.
+ * @param mergedGraph Graph of properties to find adjacent properties.
  * @param maxSuggestions Maximum number of suggestions to return.
  * @param maxSuggestionsPerOwner Maximum number of suggestions per owner.
  * @returns Array of suggested property exchanges.
  */
 export function suggestPropertyExchanges(
-	properties: Property[],
-	propertyGraph: Map<number, Set<number>>,
-	maxSuggestions: number = 5,
-	maxSuggestionsPerOwner: number = 2
+	mergedProperties: Property[],
+	mergedGraph: Map<number, Set<number>>,
+	ownerGraph: Map<number, Set<number>>,
+	maxSuggestions: number = 10,
+	maxSuggestionsPerOwner: number = Infinity
 ): PropertyExchange[] {
 	const suggestions: PropertyExchange[] = []
-	const ownerMetrics = calculateInitialMetrics(properties, propertyGraph)
+	const ownerMetrics = calculateOwnerMetrics(mergedProperties)
 	const ownerSuggestionCount = new Map<number, number>()
+	const visited = new Set<number>()
 
 	// Para cada propriedade
-	for (const property of properties) {
-		// Skip if owner already has max suggestions
-		if ((ownerSuggestionCount.get(property.owner) || 0) >= maxSuggestionsPerOwner) {
-			continue
-		}
+	for (const property of mergedProperties) {
+		const neighbors = mergedGraph.get(property.objectId)
+		if (!neighbors?.size) continue
+		visited.add(property.objectId)
 
-		// Encontrar owners adjacentes
-		const adjacentOwners = findAdjacentOwners(property, propertyGraph, properties)
-
-		for (const adjacentOwner of adjacentOwners) {
+		const owner1Metrics = ownerMetrics.get(property.owner)!
+		for (const neighborId of neighbors) {
 			// Skip if adjacent owner already has max suggestions
-			if ((ownerSuggestionCount.get(adjacentOwner) || 0) >= maxSuggestionsPerOwner) {
-				continue
-			}
+			if (visited.has(neighborId)) continue
+			const neighbor = mergedProperties.find(p => p.objectId === neighborId)!
 
-			const owner1Metrics = ownerMetrics.get(property.owner)!
-			const owner2Metrics = ownerMetrics.get(adjacentOwner)!
-
+			const owner2Metrics = ownerMetrics.get(neighbor.owner)!
 			// Ordenar propriedades do owner adjacente por área (potencial de melhoria)
-			const potentialProperties = owner2Metrics.properties
-				.filter(p => propertyGraph.get(property.objectId)?.has(p.objectId))
-				.sort((a, b) => Math.abs(b.shapeArea - property.shapeArea) - Math.abs(a.shapeArea - property.shapeArea))
-				.slice(0, 5) // Limitar às 5 propriedades mais promissoras
+			let potentialCandidates = owner1Metrics.properties.filter(
+					p => p.objectId !== property.objectId && ownerGraph.get(neighbor.owner)?.has(p.objectId)
+				),
+				bothTouch = true
+			if (!potentialCandidates.length) {
+				potentialCandidates = owner1Metrics.properties.filter(p => p.objectId !== property.objectId)
+				bothTouch = false
+			}
+			// Pair each property with its score
+			const scoredCandidates = potentialCandidates
+				.map(p => ({
+					property: p,
+					score: calculateExchangeScore(owner1Metrics, owner2Metrics, p, neighbor, bothTouch),
+				}))
+				.sort((a, b) => a.score - b.score)
 
-			for (const prop2 of potentialProperties) {
-				const areAdjacent = propertyGraph.get(property.objectId)?.has(prop2.objectId) || false
-				const score = calculateExchangeScore(owner1Metrics, owner2Metrics, property, prop2, areAdjacent)
+			for (const { property: candidate, score } of scoredCandidates) {
+				if (score === 0) continue
+				if (
+					ownerSuggestionCount.get(property.owner) === maxSuggestionsPerOwner ||
+					ownerSuggestionCount.get(neighbor.owner) === maxSuggestionsPerOwner
+				)
+					break
 
-				if (score > 0) {
-					suggestions.push({
-						owner1: property.owner,
-						owner2: adjacentOwner,
-						property1: property,
-						property2: prop2,
-						areaImprovement:
-							Math.abs(
-								(owner1Metrics.totalArea - property.shapeArea + prop2.shapeArea) /
-									owner1Metrics.propertyCount -
-									owner1Metrics.averageArea
-							) +
-							Math.abs(
-								(owner2Metrics.totalArea - prop2.shapeArea + property.shapeArea) /
-									owner2Metrics.propertyCount -
-									owner2Metrics.averageArea
-							),
-						mergedAreaImprovement: score * 2, // Estimativa baseada no score
-						sameFreguesia: property.freguesia === prop2.freguesia,
-						totalScore: score,
-					})
+				suggestions.push({
+					owner1: candidate.owner,
+					owner2: neighbor.owner,
+					property1: candidate,
+					property2: neighbor,
+					areaImprovement:
+						(owner1Metrics.totalArea + owner2Metrics.totalArea) /
+							(owner1Metrics.propertyCount + owner2Metrics.propertyCount - (bothTouch ? 2 : 1)) -
+						(owner1Metrics.totalArea + owner2Metrics.totalArea) /
+							(owner1Metrics.propertyCount + owner2Metrics.propertyCount),
+					mergedAreaImprovement1:
+						(owner1Metrics.totalArea - candidate.shapeArea + neighbor.shapeArea) /
+							// First property always touches
+							(owner1Metrics.propertyCount - 1) -
+						owner1Metrics.averageArea,
+					mergedAreaImprovement2:
+						(owner2Metrics.totalArea - neighbor.shapeArea + candidate.shapeArea) /
+							(owner2Metrics.propertyCount - (bothTouch ? 1 : 0)) -
+						owner2Metrics.averageArea,
+					sameFreguesia: neighbor.freguesia === candidate.freguesia,
+					bothTouch,
+					totalScore: score,
+				})
 
-					// Update suggestion counts for both owners
-					ownerSuggestionCount.set(property.owner, (ownerSuggestionCount.get(property.owner) || 0) + 1)
-					ownerSuggestionCount.set(adjacentOwner, (ownerSuggestionCount.get(adjacentOwner) || 0) + 1)
-
-					// Break if either owner reaches their limit
-					if (
-						(ownerSuggestionCount.get(property.owner) || 0) >= maxSuggestionsPerOwner ||
-						(ownerSuggestionCount.get(adjacentOwner) || 0) >= maxSuggestionsPerOwner
-					) {
-						break
-					}
-				}
+				// Update suggestion counts for both owners
+				ownerSuggestionCount.set(property.owner, (ownerSuggestionCount.get(property.owner) ?? 0) + 1)
+				ownerSuggestionCount.set(neighbor.owner, (ownerSuggestionCount.get(neighbor.owner) ?? 0) + 1)
 			}
 		}
 	}
 
 	// Ordenar sugestões por score e limitar ao número máximo
-	return suggestions.sort((a, b) => b.totalScore - a.totalScore).slice(0, maxSuggestions)
+	console.log(suggestions.length)
+	suggestions.sort((a, b) => b.totalScore - a.totalScore)
+	const print = suggestions.map(s => {
+		const { property1, property2, ...rest } = s
+		return { prop1Area: property1.shapeArea, prop2Area: property2.shapeArea, ...rest }
+	})
+	writeFileSync("suggestions.json", JSON.stringify(print, null, "\t"))
+	return suggestions.slice(0, maxSuggestions)
+}
+
+/**
+ * Object representing a property exchange suggestion.
+ */
+interface PropertyExchange {
+	owner1: number
+	owner2: number
+	property1: Property
+	property2: Property
+	areaImprovement: number
+	mergedAreaImprovement1: number
+	mergedAreaImprovement2: number
+	sameFreguesia: boolean
+	bothTouch: boolean
+	totalScore: number
+}
+
+/**
+ * Object representing the metrics for an owner.
+ */
+interface OwnerMetrics {
+	totalArea: number
+	propertyCount: number
+	averageArea: number
+	properties: Property[]
 }
