@@ -6,7 +6,7 @@ permissions:
     contents: write
 
 jobs:
-    docs:
+    quality:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
