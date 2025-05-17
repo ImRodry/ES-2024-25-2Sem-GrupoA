@@ -113,7 +113,7 @@ export function suggestPropertyExchanges(
 				.sort((a, b) => a.score - b.score)
 
 			for (const { property: candidate, score } of scoredCandidates) {
-				if (score === 0) continue
+				if (score === -Infinity) continue
 				if (
 					ownerSuggestionCount.get(property.owner) === maxSuggestionsPerOwner ||
 					ownerSuggestionCount.get(neighbor.owner) === maxSuggestionsPerOwner
