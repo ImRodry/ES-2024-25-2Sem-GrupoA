@@ -1,6 +1,6 @@
 {
   "statistics": {
-    "detectionDate": "2025-05-18T12:52:58.955Z",
+    "detectionDate": "2025-05-18T14:15:17.512Z",
     "formats": {
       "typescript": {
         "sources": {
@@ -54,7 +54,7 @@
           },
           "./src/graph.ts": {
             "lines": 73,
-            "tokens": 648,
+            "tokens": 650,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -79,7 +79,7 @@
         },
         "total": {
           "lines": 544,
-          "tokens": 4822,
+          "tokens": 4824,
           "sources": 6,
           "clones": 0,
           "duplicatedLines": 0,
@@ -93,7 +93,7 @@
     },
     "total": {
       "lines": 544,
-      "tokens": 4822,
+      "tokens": 4824,
       "sources": 6,
       "clones": 0,
       "duplicatedLines": 0,
