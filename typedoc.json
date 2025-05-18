@@ -1,0 +1,9 @@
+{
+	"entryPoints": ["src/**/*.ts"],
+	"exclude": ["src/index.ts"],
+	"out": "docs",
+	"tsconfig": "tsconfig.json",
+	"includeVersion": true,
+	"readme": "none",
+	"name": "ES-2024-25-2Sem-Grupo-A"
+}
