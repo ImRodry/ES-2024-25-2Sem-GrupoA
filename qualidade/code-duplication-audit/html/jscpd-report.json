@@ -1,9 +1,21 @@
 {
   "statistics": {
-    "detectionDate": "2025-05-17T11:47:04.735Z",
+    "detectionDate": "2025-05-18T12:52:58.955Z",
     "formats": {
       "typescript": {
         "sources": {
+          "./src/propertyExchange.ts": {
+            "lines": 189,
+            "tokens": 1626,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "./src/mergeProperties.ts": {
             "lines": 102,
             "tokens": 841,
@@ -17,8 +29,8 @@
             "newClones": 0
           },
           "./src/index.ts": {
-            "lines": 48,
-            "tokens": 507,
+            "lines": 78,
+            "tokens": 856,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -53,8 +65,8 @@
             "newClones": 0
           },
           "./src/calculations.ts": {
-            "lines": 16,
-            "tokens": 145,
+            "lines": 15,
+            "tokens": 142,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -66,9 +78,9 @@
           }
         },
         "total": {
-          "lines": 326,
-          "tokens": 2850,
-          "sources": 5,
+          "lines": 544,
+          "tokens": 4822,
+          "sources": 6,
           "clones": 0,
           "duplicatedLines": 0,
           "duplicatedTokens": 0,
@@ -80,9 +92,9 @@
       }
     },
     "total": {
-      "lines": 326,
-      "tokens": 2850,
-      "sources": 5,
+      "lines": 544,
+      "tokens": 4822,
+      "sources": 6,
       "clones": 0,
       "duplicatedLines": 0,
       "duplicatedTokens": 0,
